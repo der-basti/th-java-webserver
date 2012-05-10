@@ -29,13 +29,11 @@ public class WebServer extends Thread {
 				Socket serverSocket = server.accept();
 				this.config.getLog().debug(
 						"server connection start ("
-								+ serverSocket.getInputStream().toString()
-								+ ")");
+								+ serverSocket.getInetAddress() + ")");
 				new HttpHandler(this.config, serverSocket);
 				this.config.getLog().debug(
 						"server connection done ("
-								+ serverSocket.getInputStream().toString()
-								+ ")");
+								+ serverSocket.getInetAddress() + ")");
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

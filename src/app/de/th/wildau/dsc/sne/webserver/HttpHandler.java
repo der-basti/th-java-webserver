@@ -46,18 +46,18 @@ public class HttpHandler extends Thread {
 
 			while ((line = bufferedReader.readLine()) != null) {
 				requestList.add(line);
-				System.out.println(line);
+				// System.out.println("request> " + line);
 			}
-			parseRequest(requestList);
 
 			// ...
-
+			// XXX write every line separate?
+			printWriter.print(parseRequest(requestList));
 			// printWriter.print(getResponseBody());
 
 			bufferedReader.close();
-			// this.serverOutputStream.close();
-			// this.serverInputStream.close();
-			 this.serverSocket.close();
+			this.inputStream.close();
+			this.outputStream.close();
+			this.serverSocket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -74,16 +74,18 @@ public class HttpHandler extends Thread {
 		for (String line : requestList) {
 			if (Pattern.matches(line, "^GET * HTTP/1.1")) {
 				File resource = findResource(line.split(" ")[1]);
+				this.log.debug("find resource " + resource.getAbsolutePath());
 				return generateHttpHeader(resource);
 			} else if (Pattern.matches(line, "^Host: ")) {
 				// XXX config.getServerName();
+				//this.log.debug();
 			} else if (Pattern.matches(line, "")) {
 				this.log.debug("read request empty line");
 			} else {
 				this.log.warn("can not parse client request: " + line);
 			}
 		}
-		// XXX this.log.error("Return HTTP code 404" + ...);
+		this.log.warn("Return HTTP code 404");
 		return generateHttpHeader(null);
 	}
 
