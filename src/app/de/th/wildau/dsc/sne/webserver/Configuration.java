@@ -24,33 +24,27 @@ import org.w3c.dom.NodeList;
  */
 public final class Configuration {
 
-	private String serverName;
-	private int port;
-	private File webRoot;
-	private File logRoot;
-	private LogLevel logLevel;
-	private String logFilePattern;
-	private String logLinePattern;
-	private List<String> directoryIndex;
-	
-	private Log log;
+	private static String serverName;
+	private static int port;
+	private static File webRoot;
+	private static File logRoot;
+	private static LogLevel logLevel;
+	private static List<String> directoryIndex;
 
 	/**
 	 * TODO javadoc
 	 * 
 	 * @param configFile
 	 */
-	public Configuration(File configFile) {
+	protected Configuration(File configFile) {
 
-		this.directoryIndex = new ArrayList<String>();
+		directoryIndex = new ArrayList<String>();
 		parseAndSet(configFile);
-		this.log = new Log(this);
 	}
-	
+
 	// FIXME [sne] summarize the constructor
 
-	public Configuration(InputStream inputStream) {
-		// TODO Auto-generated constructor stub
+	protected Configuration(InputStream inputStream) {
 
 		File temp = null;
 		try {
@@ -75,7 +69,14 @@ public final class Configuration {
 		}
 
 		parseAndSet(temp);
-		this.log = new Log(this);
+	}
+
+	public static void create(File configFile) {
+		new Configuration(configFile);
+	}
+
+	public static void create(InputStream inputStream) {
+		new Configuration(inputStream);
 	}
 
 	private void parseAndSet(File configFile) {
@@ -96,14 +97,12 @@ public final class Configuration {
 			Node node = nodeList.item(0);
 			if (node.getNodeType() == Node.ELEMENT_NODE) {
 				// Element e = (Element) node;
-				this.serverName = getTagValue(node, "name");
-				this.port = Integer.parseInt(getTagValue(node, "port"));
-				this.webRoot = new File(getTagValue(node, "web-root"));
-				this.logRoot = new File(getTagValue(node, "log-root"));
-				this.logLevel = LogLevel.valueOf(getTagValue(node, "log-level")
+				serverName = getTagValue(node, "name");
+				port = Integer.parseInt(getTagValue(node, "port"));
+				webRoot = new File(getTagValue(node, "web-root"));
+				logRoot = new File(getTagValue(node, "log-root"));
+				logLevel = LogLevel.valueOf(getTagValue(node, "log-level")
 						.toUpperCase());
-				this.logFilePattern = getTagValue(node, "log-file-pattern");
-				this.logLinePattern = getTagValue(node, "log-line-pattern");
 				// FIXME directoryIndex
 				// NodeList nodes = doc.getElementsByTagName("directoryIndex");
 				// for (int s = 0; s < nodes.getLength(); s++) {
@@ -125,15 +124,11 @@ public final class Configuration {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Configuration [");
-		sb.append("serverName: ").append(this.serverName).append("; ");
-		sb.append("port: ").append(this.port).append("; ");
-		sb.append("webRoot: ").append(this.webRoot.getAbsolutePath())
-				.append("; ");
-		sb.append("logRoot: ").append(this.logRoot.getAbsolutePath())
-				.append("; ");
-		sb.append("logLevel: ").append(this.logLevel).append("; ");
-		sb.append("logFilePattern: ").append(this.logFilePattern).append("; ");
-		sb.append("logLinePattern: ").append(this.logLinePattern);
+		sb.append("serverName: ").append(serverName).append("; ");
+		sb.append("port: ").append(port).append("; ");
+		sb.append("webRoot: ").append(webRoot.getAbsolutePath()).append("; ");
+		sb.append("logRoot: ").append(logRoot.getAbsolutePath()).append("; ");
+		sb.append("logLevel: ").append(logLevel).append("; ");
 		// sb.append("directoryIndex: ").append(
 		// Arrays.toString(this.directoryIndex.toArray()));
 		return sb.append("]").toString();
@@ -144,8 +139,8 @@ public final class Configuration {
 	 * 
 	 * @return String serverName
 	 */
-	public final String getServerName() {
-		return this.serverName;
+	public static final String getServerName() {
+		return serverName;
 	}
 
 	/**
@@ -153,8 +148,8 @@ public final class Configuration {
 	 * 
 	 * @return port
 	 */
-	public final int getPort() {
-		return this.port;
+	public static final int getPort() {
+		return port;
 	}
 
 	/**
@@ -162,8 +157,8 @@ public final class Configuration {
 	 * 
 	 * @return File webRoot
 	 */
-	public final File getWebRoot() {
-		return this.webRoot;
+	public static final File getWebRoot() {
+		return webRoot;
 	}
 
 	/**
@@ -171,8 +166,8 @@ public final class Configuration {
 	 * 
 	 * @return File logRoot
 	 */
-	public final File getLogRoot() {
-		return this.logRoot;
+	public static final File getLogRoot() {
+		return logRoot;
 	}
 
 	/**
@@ -180,26 +175,8 @@ public final class Configuration {
 	 * 
 	 * @return LogLevel
 	 */
-	public final LogLevel getLogLevel() {
-		return this.logLevel;
-	}
-
-	/**
-	 * TODO javadoc
-	 * 
-	 * @return String logFilePattern
-	 */
-	public final String getLogFilePattern() {
-		return logFilePattern;
-	}
-
-	/**
-	 * TODO javadoc
-	 * 
-	 * @return String logLinePattern
-	 */
-	public final String getLogLinePattern() {
-		return logLinePattern;
+	public static final LogLevel getLogLevel() {
+		return logLevel;
 	}
 
 	/**
@@ -207,11 +184,7 @@ public final class Configuration {
 	 * 
 	 * @return List<String> directoryIndex
 	 */
-	public final List<String> getDirectoryIndex() {
-		return Collections.unmodifiableList(this.directoryIndex);
-	}
-
-	protected Log getLog() {
-		return log;
+	public static final List<String> getDirectoryIndex() {
+		return Collections.unmodifiableList(directoryIndex);
 	}
 }

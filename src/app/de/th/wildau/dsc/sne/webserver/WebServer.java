@@ -10,30 +10,19 @@ import java.net.Socket;
  */
 public class WebServer extends Thread {
 
-	private final Configuration config;
-
-	/**
-	 * TODO javadoc
-	 * 
-	 * @param config
-	 */
-	public WebServer(Configuration config) {
-		this.config = config;
-	}
-
 	@Override
 	public void run() {
 		try {
-			ServerSocket server = new ServerSocket(this.config.getPort());
+			ServerSocket server = new ServerSocket(Configuration.getPort());
+			Log.debug("bound port " + Configuration.getPort());
 			while (true) {
 				Socket serverSocket = server.accept();
-				this.config.getLog().debug(
-						"server connection start ("
-								+ serverSocket.getInetAddress() + ")");
-				new HttpHandler(this.config, serverSocket);
-				this.config.getLog().debug(
-						"server connection done ("
-								+ serverSocket.getInetAddress() + ")");
+				Log.debug("server connection started ("
+						+ serverSocket.getInetAddress() + ")");
+				HttpHandler http = new HttpHandler(serverSocket);
+				http.start();
+				Log.debug("server connection done ("
+						+ serverSocket.getInetAddress() + ")");
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

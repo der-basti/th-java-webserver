@@ -16,31 +16,53 @@ import java.util.GregorianCalendar;
  */
 public class Log {
 
-	private Calendar calendar;
-	private File logDir;
-	private File logFile;
-	private LogLevel logLevel;
-	private PrintWriter printWriter;
-	// XXX [dsc] make configurable?
-	private String filePattern = "yyyy-MM-dd";
-	private String logPattern = "hh:mm:ss:SSS";
+	private static Calendar calendar;
+	private static File logDir;
+	private static File logFile;
+	private static LogLevel logLevel;
+	private static PrintWriter printWriter;
+	private static String filePattern = "yyyy-MM-dd";
+	private static String logPattern = "HH:mm:ss:SSS";
 
 	/**
-	 * TODO javadoc
+	 * Statische Methode, liefert die einzige Instanz dieser Klasse zurück
 	 * 
 	 * @param configuration
 	 * 
 	 */
-	public Log(Configuration configuration) {
+	@Deprecated
+	private Log(Configuration configuration) {
 
-		this.calendar = new GregorianCalendar();
-		this.logDir = configuration.getLogRoot();
-		this.logFile = new File(this.logDir + "/" + getTime(this.filePattern)
+		Log.calendar = new GregorianCalendar();
+		Log.logDir = configuration.getLogRoot();
+		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern)
 				+ ".log");
-		this.logLevel = configuration.getLogLevel();
+		Log.logLevel = configuration.getLogLevel();
+	}
+	
+	private Log(Calendar calendar, File logDir, LogLevel logLevel) {
+
+		Log.calendar = calendar;
+		Log.logDir = logDir;
+		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern)
+				+ ".log");
+		Log.logLevel = logLevel;
 	}
 
-	private synchronized void log(LogLevel logLevel, String text) {
+	/**
+	 * Static method, which returns only one instance of this class.
+	 */
+	@Deprecated
+	public static void createInstance(Configuration configuration) {
+		new Log(configuration);
+		debug("instance already exists.");
+	}
+	
+	public static void createInstance() {
+		new Log(new GregorianCalendar(), Configuration.getLogRoot(), Configuration.getLogLevel());
+	}
+	
+	private static synchronized void log(LogLevel logLevel, String text) {
 
 		if (!hasLogDir()) {
 			createLogDir();
@@ -50,7 +72,7 @@ public class Log {
 			createLogFile();
 		}
 
-		if (this.logLevel.ordinal() >= logLevel.ordinal()) {
+		if (Log.logLevel.ordinal() >= logLevel.ordinal()) {
 			appendLogFile(logLevel, text);
 		}
 	}
@@ -61,17 +83,17 @@ public class Log {
 	 * @return <code>true</code> if LogDir already exists<br />
 	 *         <code>false</code> otherwise
 	 */
-	private boolean hasLogDir() {
+	private static boolean hasLogDir() {
 
-		return this.logDir.exists();
+		return Log.logDir.exists();
 	}
 
 	/**
 	 * Create log directory.
 	 */
-	private void createLogDir() {
+	private static void createLogDir() {
 
-		this.logDir.mkdirs();
+		Log.logDir.mkdirs();
 	}
 
 	/**
@@ -80,37 +102,37 @@ public class Log {
 	 * @return <code>true</code> if log file already exists<br />
 	 *         <code>false</code> otherwise
 	 */
-	private boolean hasLogFile() {
+	private static boolean hasLogFile() {
 
-		return this.logFile.exists();
+		return Log.logFile.exists();
 	}
 
 	/**
 	 * Create a log file for the current day.
 	 */
-	private void createLogFile() {
+	private static void createLogFile() {
 
 		try {
 			// XXX [dsc] is a PrintWriter(file) a better solution?
-			this.printWriter = new PrintWriter(new BufferedWriter(
-					new FileWriter(this.logFile)));
-			this.printWriter.flush();
+			printWriter = new PrintWriter(new BufferedWriter(
+					new FileWriter(Log.logFile)));
+			printWriter.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.err.println("Couldn't create log file.");
 		}
 	}
 
-	private void appendLogFile(LogLevel logLevel, String text) {
+	private static void appendLogFile(LogLevel logLevel, String text) {
 
 		try {
 			// XXX [dsc] is a PrintWriter(file) a better solution?
-			this.printWriter = new PrintWriter(new BufferedWriter(
-					new FileWriter(this.logFile, true)));
-			this.printWriter.print(System.getProperty("line.separator")
-					+ getTime(this.logPattern) + " [" + logLevel.name() + "] "
+			printWriter = new PrintWriter(new BufferedWriter(
+					new FileWriter(logFile, true)));
+			printWriter.print(System.getProperty("line.separator")
+					+ getTime(logPattern) + " [" + logLevel.name() + "] "
 					+ text);
-			this.printWriter.flush();
+			printWriter.flush();
 		} catch (IOException e) {
 			System.err.println("Couldn't append to log file.");
 		}
@@ -132,9 +154,9 @@ public class Log {
 	 *            String
 	 * @return formated time
 	 */
-	private String getTime(String pattern) {
+	private static String getTime(String pattern) {
 
-		return new SimpleDateFormat(pattern).format(this.calendar.getTime());
+		return new SimpleDateFormat(pattern).format(calendar.getTime());
 	}
 
 	/**
@@ -142,7 +164,7 @@ public class Log {
 	 * 
 	 * @param text
 	 */
-	public void debug(String text) {
+	public static void debug(String text) {
 
 		log(LogLevel.DEBUG, text);
 	}
@@ -152,7 +174,7 @@ public class Log {
 	 * 
 	 * @param text
 	 */
-	public void info(String text) {
+	public static void info(String text) {
 
 		log(LogLevel.INFO, text);
 	}
@@ -162,7 +184,7 @@ public class Log {
 	 * 
 	 * @param text
 	 */
-	public void warn(String text) {
+	public static void warn(String text) {
 
 		log(LogLevel.WARN, text);
 	}
@@ -172,7 +194,7 @@ public class Log {
 	 * 
 	 * @param text
 	 */
-	public void error(String text) {
+	public static void error(String text) {
 
 		log(LogLevel.ERROR, text);
 	}
@@ -182,7 +204,7 @@ public class Log {
 	 * 
 	 * @param text
 	 */
-	public void fatal(String text) {
+	public static void fatal(String text) {
 
 		log(LogLevel.FATAL, text);
 	}

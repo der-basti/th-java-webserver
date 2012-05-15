@@ -4,8 +4,6 @@
 	<web-root>/DocDir</web-root>
 	<log-root>/LogDir</log-root>
 	<log-level>error</log-level>
-	<log-file-pattern>yyyy-mm-dd</log-file-pattern>
-	<log-line-pattern>hh:mm:ss:ms [LOG-LEVEL] [TEXT]</log-line-pattern>
 	<directoryIndex>
 		<item>index.html</item>
 		<item>index.htm</item>
