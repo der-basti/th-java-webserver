@@ -39,7 +39,6 @@ public final class Runner {
 		Log.createInstance();
 		Log.info("loaded server configuration");
 
-		Log.debug("instantiating web server");
 		new WebServer().start();
 	}
 }

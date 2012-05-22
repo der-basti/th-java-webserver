@@ -110,6 +110,11 @@ public final class Configuration {
 				// System.out.println(iNode.getNodeValue());
 				// this.directoryIndex.add(iNode.getNodeValue());
 				// }
+
+				// Node dirNode = doc.getChildNodes().item(0);
+				// for (int i = 0; i < dirNode.getChildNodes().getLength(); i++)
+				// System.out.println(dirNode.getChildNodes().item(i).getNodeName()
+				// +" > "+dirNode.getChildNodes().item(i).getTextContent());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

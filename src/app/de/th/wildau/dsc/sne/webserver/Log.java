@@ -35,17 +35,15 @@ public class Log {
 
 		Log.calendar = new GregorianCalendar();
 		Log.logDir = configuration.getLogRoot();
-		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern)
-				+ ".log");
+		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern) + ".log");
 		Log.logLevel = configuration.getLogLevel();
 	}
-	
+
 	private Log(Calendar calendar, File logDir, LogLevel logLevel) {
 
 		Log.calendar = calendar;
 		Log.logDir = logDir;
-		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern)
-				+ ".log");
+		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern) + ".log");
 		Log.logLevel = logLevel;
 	}
 
@@ -57,11 +55,12 @@ public class Log {
 		new Log(configuration);
 		debug("instance already exists.");
 	}
-	
+
 	public static void createInstance() {
-		new Log(new GregorianCalendar(), Configuration.getLogRoot(), Configuration.getLogLevel());
+		new Log(new GregorianCalendar(), Configuration.getLogRoot(),
+				Configuration.getLogLevel());
 	}
-	
+
 	private static synchronized void log(LogLevel logLevel, String text) {
 
 		if (!hasLogDir()) {
@@ -113,9 +112,9 @@ public class Log {
 	private static void createLogFile() {
 
 		try {
-			// XXX [dsc] is a PrintWriter(file) a better solution?
-			printWriter = new PrintWriter(new BufferedWriter(
-					new FileWriter(Log.logFile)));
+			// XXX [dsc] is PrintWriter(file) a better solution?
+			printWriter = new PrintWriter(new BufferedWriter(new FileWriter(
+					Log.logFile)));
 			printWriter.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -127,8 +126,8 @@ public class Log {
 
 		try {
 			// XXX [dsc] is a PrintWriter(file) a better solution?
-			printWriter = new PrintWriter(new BufferedWriter(
-					new FileWriter(logFile, true)));
+			printWriter = new PrintWriter(new BufferedWriter(new FileWriter(
+					logFile, true)));
 			printWriter.print(System.getProperty("line.separator")
 					+ getTime(logPattern) + " [" + logLevel.name() + "] "
 					+ text);
@@ -203,9 +202,31 @@ public class Log {
 	 * TODO javadoc
 	 * 
 	 * @param text
+	 * @param errorMessage
+	 */
+	public static void error(String text, String errorMessage) {
+
+		log(LogLevel.ERROR, text + " [" + errorMessage + "]");
+	}
+
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param text
 	 */
 	public static void fatal(String text) {
 
 		log(LogLevel.FATAL, text);
+	}
+
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param text
+	 * @param fatalMessage
+	 */
+	public static void fatal(String text, String fatalMessage) {
+
+		log(LogLevel.FATAL, text + " [" + fatalMessage + "]");
 	}
 }

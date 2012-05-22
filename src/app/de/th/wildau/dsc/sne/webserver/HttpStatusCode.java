@@ -1,12 +1,12 @@
 package de.th.wildau.dsc.sne.webserver;
 
-public enum HttpCode {
+public enum HttpStatusCode {
 
-	HTTP_200("200 OK", null), HTTP_400("400 Not Found", null);
+	CODE_200("200 OK", null), CODE_404("404 Not Found", null);
 	
 	private String server;
 	
-	HttpCode(String server, Object foo) {
+	HttpStatusCode(String server, Object foo) {
 		this.server = server;
 	}
 	

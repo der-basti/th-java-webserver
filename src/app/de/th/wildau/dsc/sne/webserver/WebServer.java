@@ -12,21 +12,24 @@ public class WebServer extends Thread {
 
 	@Override
 	public void run() {
+
+		Log.info("instantiating web server");
 		try {
 			ServerSocket server = new ServerSocket(Configuration.getPort());
 			Log.debug("bound port " + Configuration.getPort());
 			while (true) {
-				Socket serverSocket = server.accept();
-				Log.debug("server connection started ("
-						+ serverSocket.getInetAddress() + ")");
-				HttpHandler http = new HttpHandler(serverSocket);
-				http.start();
-				Log.debug("server connection done ("
-						+ serverSocket.getInetAddress() + ")");
+				try {
+					Socket serverSocket = server.accept();
+					Log.info(serverSocket.getInetAddress().getHostName()
+							+ " client request");
+					HttpHandler http = new HttpHandler(serverSocket);
+					http.start();
+				} catch (IOException ex) {
+					Log.error("Connection failed!", ex.getMessage());
+				}
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException ex) {
+			Log.fatal("Can not start the server!", ex.getMessage());
 		}
 	}
 }
