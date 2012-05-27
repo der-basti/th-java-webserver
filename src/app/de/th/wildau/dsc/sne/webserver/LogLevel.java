@@ -1,9 +1,11 @@
 package de.th.wildau.dsc.sne.webserver;
 
 /**
- * LogLevel for different informations.
+ * The LogLevel enum defines a set of 'standard' logging levels that can be used
+ * to control logging output.
  * 
- * @author dsc and sne
+ * @author sne
+ * 
  */
 public enum LogLevel {
 

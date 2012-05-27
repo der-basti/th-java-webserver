@@ -6,84 +6,131 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.regex.Pattern;
 
 /**
- * TODO javadoc
+ * A handler which is invoked to process HTTP exchanges. Each HTTP exchange is
+ * handled by one of these handlers.
+ * 
+ * Handle the given request and generate an appropriate response.
+ * 
+ * @author sne
+ * 
  */
-public class HttpHandler extends Thread {
+class HttpHandler implements Runnable {
 
-	private final Socket serverSocket;
-	private InputStream inputStream;
-	private OutputStream outputStream;
+	private Socket socket;
 
-	public HttpHandler(Socket serverSocket) throws IOException {
-
-		this.serverSocket = serverSocket;
-		this.inputStream = this.serverSocket.getInputStream();
-		this.outputStream = this.serverSocket.getOutputStream();
+	protected HttpHandler(Socket socket) {
+		this.socket = socket;
 	}
 
+	/**
+	 * Process the request.
+	 */
 	@Override
 	public void run() {
 
-		BufferedReader bufferedReader = new BufferedReader(
-				new InputStreamReader(this.inputStream));
+		if (this.socket == null) {
+			throw new IllegalStateException("Missing server socket.");
+		}
+
 		try {
-			// TODO better solution is with regex
-			File requestResource = new File(Configuration.getWebRoot()
-					+ bufferedReader.readLine().split(" ")[1]);
+			InputStream input = socket.getInputStream();
+			OutputStream output = socket.getOutputStream();
+			processRequest(input, output);
+			closeConnection();
+		} catch (IOException ex) {
+			Log.error("Http handle exception!", ex.getMessage());
+		}
+	}
+
+	private void processRequest(InputStream input, OutputStream output) {
+
+		try {
+			BufferedReader bufferedReader = new BufferedReader(
+					new InputStreamReader(input));
+			File requestResource = null;
+
+			// FIXME take a long time
+			// String readLine;
+			// while ((readLine = bufferedReader.readLine()) != null) {
+			// Log.debug("Request header ["
+			// + this.socket.getInetAddress().getHostName() + "]: "
+			// + readLine); // support GET HTTP 1.0 & 1.1 requests
+			// if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", readLine)) {
+			// // requestResource = new File(Configuration.getWebRoot()
+			// // + readLine.split(" ")[1]);
+			// } else if (Pattern.matches("^POST /. HTTP/1.?", readLine)) {
+			// Log.warn("Doesn't support POST requests!");
+			// break;
+			// }
+			// }
+
+			String firstRequestLine = bufferedReader.readLine();
+			Log.debug("first request line: " + firstRequestLine);
+			if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", firstRequestLine)) {
+				requestResource = new File(Configuration.getWebRoot()
+						+ firstRequestLine.split(" ")[1]);
+			}
+
+			if (requestResource == null) {
+				Log.fatal(
+						"Doesn't find a resource string in the request header.",
+						firstRequestLine);
+				return;
+			}
 
 			Log.debug("request resource: " + requestResource.toString());
-			HttpWriter httpWriter;
+			HttpWriter httpWriter = null;
 
 			if (!requestResource.exists()) {
 				Log.info("Request resource doesn't exists: "
 						+ requestResource.getPath());
-				httpWriter = new HttpWriter(404, ContentType.TEXT_HTML);
-				httpWriter.write(this.outputStream, requestResource);
 
+				httpWriter = new HttpWriter(404); //
+				httpWriter.write(output, requestResource);
 			} else if (requestResource.isDirectory()) {
 				Log.info("Request resource is a directory: "
 						+ requestResource.toString());
-				// TODO [sne] exist a index file
-				// TODO return index file
-				// TODO [dsc] return list (links) of files
-				// else 403 forbidden
-				httpWriter = new HttpWriter(403, ContentType.TEXT_HTML);
-				httpWriter.write(this.outputStream, requestResource);
 
+				if (requestResource.canRead()) {
+
+					// TODO [sne] exist a index file
+					// TODO return index file
+					// TODO [dsc] return list (links) of files
+					httpWriter = new HttpWriter(200);
+					httpWriter.write(output, requestResource);
+				} else {
+					httpWriter = new HttpWriter(403);
+					httpWriter.write(output, requestResource);
+				}
 			} else if (requestResource.isFile()) {
 				Log.info("Request resource is a file: "
 						+ requestResource.toString());
 
 				if (requestResource.isHidden()) {
-					Log.warn("Can not deliver hidden files!");
-					httpWriter = new HttpWriter(404, ContentType.TEXT_HTML);
-					httpWriter.write(this.outputStream, null);
+					Log.warn("Can not deliver hidden files.");
+					httpWriter = new HttpWriter(404);
+					httpWriter.write(output, null);
 				} else if (requestResource.canRead()) {
-					// TODO deliver file
-					// TODO chek content type
-					/*
-					 * XXX [dsc] handle different file extensions if
-					 * (path.endsWith(".zip" ) { type_is = 3; } if
-					 * (path.endsWith(".jpg") || path.endsWith(".jpeg")) {
-					 * type_is = 1; } if (path.endsWith(".gif")) {
-					 */
-					httpWriter = new HttpWriter(200, ContentType.TEXT_HTML);
-					httpWriter.write(this.outputStream, requestResource);
+					httpWriter = new HttpWriter(200);
+					httpWriter.write(output, requestResource);
 				} else {
-					// TODO 500 Internal Server Error
+					Log.warn("request resource is a file, but can not handle it.");
+					httpWriter = new HttpWriter(500);
+					httpWriter.write(output, requestResource);
 				}
 			} else {
-				httpWriter = new HttpWriter(500, ContentType.TEXT_HTML);
-				httpWriter.write(this.outputStream, requestResource);
+
 			}
 		} catch (IOException ex) {
 			Log.error("Can not read request: " + ex.getMessage());
+		} catch (Exception ex) {
+			Log.fatal("Catch processRequest() exception!", ex.getMessage());
 		}
-
-		closeConnection();
 	}
 
 	/**
@@ -92,12 +139,17 @@ public class HttpHandler extends Thread {
 	private void closeConnection() {
 
 		try {
-			this.inputStream.close();
-			this.outputStream.close();
-		} catch (IOException e) {
-			Log.error(e.getMessage());
+			PrintWriter out = new PrintWriter(this.socket.getOutputStream(),
+					true);
+			// check is output socket closed
+			if (out.checkError()) {
+				this.socket.getOutputStream().close();
+			}
+			this.socket.getInputStream().close();
+		} catch (IOException ex) {
+			Log.error("Close connection.", ex.getMessage());
 		}
-		Log.info(this.serverSocket.getInetAddress().getHostName()
+		Log.info(this.socket.getInetAddress().getHostName()
 				+ " client connection done.");
 	}
 }

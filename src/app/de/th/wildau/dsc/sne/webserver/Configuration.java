@@ -1,131 +1,68 @@
 package de.th.wildau.dsc.sne.webserver;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import javax.xml.bind.JAXB;
 
 /**
  * WebServer Configuration.
  * 
  * @author dsc and sne
  */
-public final class Configuration {
+final class Configuration {
+
+	private static Configuration instance;
 
 	private static String serverName;
 	private static int port;
 	private static File webRoot;
 	private static File logRoot;
 	private static LogLevel logLevel;
-	private static List<String> directoryIndex;
+	private static List<String> directoryIndex = new ArrayList<String>();
 
-	/**
-	 * TODO javadoc
-	 * 
-	 * @param configFile
-	 */
-	protected Configuration(File configFile) {
+	private Configuration(ConfigurationFile configurationFile) {
 
-		directoryIndex = new ArrayList<String>();
-		parseAndSet(configFile);
+		serverName = configurationFile.getServerName();
+		port = configurationFile.getServerPort();
+		webRoot = new File(configurationFile.getWebRoot());
+		logRoot = new File(configurationFile.getLogRoot());
+		logLevel = LogLevel.valueOf(configurationFile.getLogLevel()
+				.toUpperCase());
+		// for (String str : configurationFile.getDirectoryIndex()) {
+		// directoryIndex.add(str);
+		// }
 	}
 
-	// FIXME [sne] summarize the constructor
+	private Configuration(File configFile) {
 
-	protected Configuration(InputStream inputStream) {
-
-		File temp = null;
-		try {
-			temp = File.createTempFile("server.conf", ".default");
-			temp.deleteOnExit();
-			OutputStream out = new FileOutputStream(temp);
-			int read = 0;
-			byte[] bytes = new byte[1024];
-			while ((read = inputStream.read(bytes)) != -1) {
-				out.write(bytes, 0, read);
-			}
-			inputStream.close();
-			out.flush();
-			out.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		if (temp == null) {
-			throw new IllegalStateException("Can not load configuration file.");
-		}
-
-		parseAndSet(temp);
+		this(JAXB.unmarshal(configFile, ConfigurationFile.class));
 	}
 
 	public static void create(File configFile) {
-		new Configuration(configFile);
+		instance = new Configuration(configFile);
 	}
 
 	public static void create(InputStream inputStream) {
-		new Configuration(inputStream);
-	}
 
-	private void parseAndSet(File configFile) {
 		try {
-			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder documentBuilder = documentBuilderFactory
-					.newDocumentBuilder();
-			Document doc = documentBuilder.parse(configFile);
-			doc.getDocumentElement().normalize();
-
-			if ("server-node" != doc.getDocumentElement().getNodeName()) {
-				throw new IllegalArgumentException(
-						"Missing server-node element.");
-			}
-
-			NodeList nodeList = doc.getElementsByTagName("server-node");
-			Node node = nodeList.item(0);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				// Element e = (Element) node;
-				serverName = getTagValue(node, "name");
-				port = Integer.parseInt(getTagValue(node, "port"));
-				webRoot = new File(getTagValue(node, "web-root"));
-				logRoot = new File(getTagValue(node, "log-root"));
-				logLevel = LogLevel.valueOf(getTagValue(node, "log-level")
-						.toUpperCase());
-				// FIXME directoryIndex
-				// NodeList nodes = doc.getElementsByTagName("directoryIndex");
-				// for (int s = 0; s < nodes.getLength(); s++) {
-				// Node iNode = nodes.item(s);
-				// System.out.println(iNode.getNodeValue());
-				// this.directoryIndex.add(iNode.getNodeValue());
-				// }
-
-				// Node dirNode = doc.getChildNodes().item(0);
-				// for (int i = 0; i < dirNode.getChildNodes().getLength(); i++)
-				// System.out.println(dirNode.getChildNodes().item(i).getNodeName()
-				// +" > "+dirNode.getChildNodes().item(i).getTextContent());
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			File temp = File.createTempFile("server.conf", ".default");
+			temp.deleteOnExit();
+			instance = new Configuration(temp);
+		} catch (IOException ex) {
+			throw new IllegalStateException(
+					"Can not load default configuration. " + ex.getMessage());
 		}
 	}
 
-	private String getTagValue(Node node, String tagName) {
-		return ((Element) node).getElementsByTagName(tagName).item(0)
-				.getChildNodes().item(0).getNodeValue();
+	protected static Configuration getInstance() {
+		return instance;
 	}
-
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Configuration [");

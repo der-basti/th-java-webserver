@@ -1,23 +1,35 @@
 package de.th.wildau.dsc.sne.webserver;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 
-public class HttpWriter {
+class HttpWriter {
 
 	private final int httpStatusCode;
-	private final ContentType contentType;
 
-	public HttpWriter(int httpCode, ContentType contentType) {
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param httpCode
+	 */
+	protected HttpWriter(int httpCode) {
 
 		this.httpStatusCode = httpCode;
-		this.contentType = contentType;
 	}
 
-	public void write(OutputStream outputStream, File requestResource) {
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param outputStream
+	 * @param requestResource
+	 */
+	protected void write(OutputStream outputStream, File requestResource) {
 
 		switch (this.httpStatusCode) {
 		case 200:
@@ -34,80 +46,130 @@ public class HttpWriter {
 			break;
 		}
 
-		writeHeader(outputStream, requestResource);
-		writeBody(outputStream, requestResource);
+		Log.debug("ContextType: " + getContentType(requestResource));
+
+		// generate and append the response
+		String tempBody = generateBody(outputStream, requestResource);
+		String response = generateHeader(tempBody, requestResource) + tempBody;
+
+		try {
+			outputStream.write(response.getBytes());
+			outputStream.flush();
+		} catch (IOException ex) {
+			Log.error("Can not write response / output stream! ",
+					ex.getMessage());
+		}
 	}
 
-	private void writeHeader(OutputStream outputStream, File requestResource) {
-		// TODO Auto-generated method stub
+	/**
+	 * Internal help method, which generate the http header.
+	 * 
+	 * @param body
+	 * @param requestResource
+	 * @return String http header
+	 */
+	private String generateHeader(String body, File requestResource) {
 
 		String header = new String();
 
 		switch (this.httpStatusCode) {
 		case 200:
-			try {
-				FileInputStream fileInputStream = new FileInputStream(
-						requestResource);
-
-				while (true) {
-					// read the file from filestream, and print out through the
-					// client-outputstream on a byte per byte base.
-					int b = fileInputStream.read();
-					if (b == -1) {
-						break; // end of file
-					}
-					outputStream.write(b);
-				}
-			} catch (FileNotFoundException ex) {
-				Log.error(
-						"Can not found resource file: "
-								+ requestResource.toString(), ex.getMessage());
-			} catch (IOException ex) {
-				Log.error("Can not read the file.", ex.getMessage());
+			header += "HTTP/1.1 200 OK" + getLineBreak();
+			// XXX
+			if (!requestResource.isDirectory()) {
+				header += "Content-Type: " + getContentType(requestResource)
+						+ getLineBreak();
+			} else {
+				header += "Content-Type: text/html" + getLineBreak();
 			}
-
-			// output = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n"
-			// + "Content-Length: " + details.length() + "\r\n" + "\r\n"
-			// + details;
+			header += "Content-Length: " + requestResource.length()
+					+ getLineBreak();
 			break;
 		case 403:
 			// TODO
 			/*
-			 * <html><body>Forbidden<br /> You don't have permission to access /ebay/ on
-			 * this server.</body></html>
+			 * <html><body>Forbidden<br /> You don't have permission to access
+			 * /foo/bar/ on this server.</body></html>
 			 */
 			break;
 		case 404:
-			String errorDetail = "<h1>Foo 404</h1><h2>Error 404 File Not Found.</h2>";
-			header = "HTTP/1.1 404 File Not Found" + getLineBreak()
+			header += "HTTP/1.1 404 File Not Found" + getLineBreak()
 					+ "Content-Type: text/html" + getLineBreak()
-					+ "Content-Length: " + errorDetail.length()
-					+ getLineBreak() + getLineBreak() + errorDetail;
+					+ "Content-Length: " + body.length();
 			break;
 		default:
-			// 500 Internal Server Error
+			// TODO 500 Internal Server Error
+			body += "<h1>500 Internal Server Error</h1>";
 			break;
 		}
 
-		try {
-			outputStream.write(header.getBytes());
-			outputStream.flush();
-		} catch (IOException ex) {
-			Log.error("Can not write header output stream! ", ex.getMessage());
-		}
+		// add empty line
+		header += getLineBreak() + getLineBreak();
+
+		return header;
 	}
 
-	private void writeBody(OutputStream outputStream, File requestResource) {
-		// TODO Auto-generated method stub
+	/**
+	 * Internal help method, which generate the http body.
+	 * 
+	 * @param outputStream
+	 * @param requestResource
+	 * @return http body string
+	 */
+	private String generateBody(OutputStream outputStream, File requestResource) {
 
 		String body = new String();
 
-		try {
-			outputStream.write(body.getBytes());
-			outputStream.flush();
-		} catch (IOException ex) {
-			Log.error("Can not write header output stream! ", ex.getMessage());
+		switch (this.httpStatusCode) {
+		case 200:
+
+			if (requestResource.isFile()) {
+				if (getContentType(requestResource).startsWith("image")) {
+					try {
+						sendBytes(new FileInputStream(requestResource),
+								outputStream);
+					} catch (FileNotFoundException ex) {
+						ex.printStackTrace();
+					}
+				} else {
+					BufferedReader bufferedReader = null;
+					try {
+						bufferedReader = new BufferedReader(
+								new InputStreamReader(new FileInputStream(
+										requestResource)));
+						String strLine;
+						while ((strLine = bufferedReader.readLine()) != null) {
+							body += strLine;
+						}
+						bufferedReader.close();
+					} catch (IOException ex) {
+						Log.error("Can not read file.", ex.getMessage());
+					} finally {
+						if (bufferedReader != null) {
+							// XXX bufferedReader.close();
+						}
+					}
+				}
+			} else if (requestResource.isDirectory()) {
+				body += "<html><body><ul>";
+				for (File file : requestResource
+						.listFiles(new HiddenFileFilter())) {
+					body += "<li><a href=\"" + file.getName() + "\">"
+							+ file.getName() + "</a></li>";
+				}
+				body += "</ul></body></html>";
+			}
+			break;
+		case 404:
+		default:
+			// XXX good solution?
+			body += "<html><body>";
+			body += "<h1>Error 404</h1><h2>File Not Found.</h2>";
+			body += "</body></html>";
+			break;
 		}
+
+		return body;
 	}
 
 	private String getLineBreak() {
@@ -116,11 +178,44 @@ public class HttpWriter {
 		return "\r\n";
 	}
 
-	protected int getHttpCode() {
-		return this.httpStatusCode;
+	@Deprecated
+	private void sendBytes(FileInputStream fis, OutputStream os) {
+		byte[] buffer = new byte[1024];
+		int bytes = 0;
+
+		try {
+			// copy requested file into the socket's output stream.
+			while ((bytes = fis.read(buffer)) != -1) {
+				os.write(buffer, 0, bytes);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 	}
 
-	protected ContentType getContentType() {
-		return this.contentType;
+	/**
+	 * Help method, which find the content type of the request resource file.
+	 * 
+	 * @param requestResource
+	 * @return content type
+	 */
+	private String getContentType(File requestResource) {
+
+		try {
+			if (requestResource.isFile()) {
+				return requestResource.toURI().toURL().openConnection()
+						.getContentType();
+			}
+		} catch (MalformedURLException ex) {
+			Log.warn(ex.getMessage());
+		} catch (IOException ex) {
+			Log.warn(ex.getMessage());
+		}
+		// unknown content type - browser handle it
+		return "application/octet-stream";
+	}
+
+	protected int getHttpCode() {
+		return this.httpStatusCode;
 	}
 }

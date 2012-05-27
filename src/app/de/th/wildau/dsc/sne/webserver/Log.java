@@ -10,9 +10,10 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * XXX [dsc|sne] javadoc
+ * Log is used to log messages for a specific application component.
  * 
  * @author dsc and sne
+ * 
  */
 public class Log {
 
@@ -25,20 +26,12 @@ public class Log {
 	private static String logPattern = "HH:mm:ss:SSS";
 
 	/**
-	 * Statische Methode, liefert die einzige Instanz dieser Klasse zurück
+	 * Hidden constructor. Log is a singleton.
 	 * 
-	 * @param configuration
-	 * 
+	 * @param calendar
+	 * @param logDir
+	 * @param logLevel
 	 */
-	@Deprecated
-	private Log(Configuration configuration) {
-
-		Log.calendar = new GregorianCalendar();
-		Log.logDir = configuration.getLogRoot();
-		Log.logFile = new File(Log.logDir + "/" + getTime(filePattern) + ".log");
-		Log.logLevel = configuration.getLogLevel();
-	}
-
 	private Log(Calendar calendar, File logDir, LogLevel logLevel) {
 
 		Log.calendar = calendar;
@@ -50,28 +43,30 @@ public class Log {
 	/**
 	 * Static method, which returns only one instance of this class.
 	 */
-	@Deprecated
-	public static void createInstance(Configuration configuration) {
-		new Log(configuration);
-		debug("instance already exists.");
-	}
-
 	public static void createInstance() {
 		new Log(new GregorianCalendar(), Configuration.getLogRoot(),
 				Configuration.getLogLevel());
 	}
 
+	/**
+	 * The main logging function.
+	 * 
+	 * @param logLevel
+	 * @param text
+	 */
+	// TODO [dsc] try to synchronize the specific object
 	private static synchronized void log(LogLevel logLevel, String text) {
 
-		if (!hasLogDir()) {
-			createLogDir();
-		}
-
-		if (!hasLogFile()) {
-			createLogFile();
-		}
-
 		if (Log.logLevel.ordinal() >= logLevel.ordinal()) {
+
+			if (!hasLogDir()) {
+				createLogDir();
+			}
+
+			if (!hasLogFile()) {
+				createLogFile();
+			}
+
 			appendLogFile(logLevel, text);
 		}
 	}
@@ -112,7 +107,7 @@ public class Log {
 	private static void createLogFile() {
 
 		try {
-			// XXX [dsc] is PrintWriter(file) a better solution?
+			// XXX [dsc] any better solutions?
 			printWriter = new PrintWriter(new BufferedWriter(new FileWriter(
 					Log.logFile)));
 			printWriter.flush();
@@ -125,7 +120,7 @@ public class Log {
 	private static void appendLogFile(LogLevel logLevel, String text) {
 
 		try {
-			// XXX [dsc] is a PrintWriter(file) a better solution?
+			// XXX [dsc] any better solutions?
 			printWriter = new PrintWriter(new BufferedWriter(new FileWriter(
 					logFile, true)));
 			printWriter.print(System.getProperty("line.separator")

@@ -1,15 +1,15 @@
-<server-node>
+<servernode>
 	<name>WebServer by dsc and sne</name>
 	<port>1337</port>
-	<web-root>/DocDir</web-root>
-	<log-root>/LogDir</log-root>
-	<log-level>error</log-level>
-	<directoryIndex>
+	<webroot>/</web-root>
+	<logroot>/</log-root>
+	<loglevel>info</log-level>
+	<directoryindex>
 		<item>index.html</item>
 		<item>index.htm</item>
 		<item>default.html</item>
 		<item>default.htm</item>
 		<item>welcome.html</item>
 		<item>welcome.htm</item>
-	</directoryIndex>
-</server-node>
+	</directoryindex>
+</servernode>
