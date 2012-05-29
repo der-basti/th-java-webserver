@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -49,11 +50,14 @@ public class WebServer {
 			ArrayBlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(
 					maxPoolSize);
 			long keepAliveTime = 5000;
-			// XXX http://www.ibm.com/developerworks/library/j-jtp0730/
+			// XXX [sne] http://www.ibm.com/developerworks/library/j-jtp0730/
 			ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
 					corePoolSize, maxPoolSize, keepAliveTime,
 					TimeUnit.MILLISECONDS, workQueue);
 			threadPool.prestartAllCoreThreads();
+
+			// TODO [sne] implement script execution
+			ScriptExecutor scriptExecutor = new ScriptExecutor();
 
 			while (true) {
 				Socket socket;
@@ -64,13 +68,13 @@ public class WebServer {
 					Log.debug("current threads: " + threadPool.getActiveCount());
 					threadPool.execute(new HttpHandler(socket));
 				} catch (IOException ex) {
-					Log.error("Connection failed!", ex.getMessage());
+					Log.error("Connection failed!", ex);
 				} catch (Exception ex) {
-					Log.fatal("Unknown error!", ex.getMessage());
+					Log.fatal("Unknown error!", ex);
 				}
 			}
 		} catch (IOException ex) {
-			Log.fatal("Can not start the server!", ex.getMessage());
+			Log.fatal("Can not start the server!", ex);
 			System.err.println("Can not start the server! " + ex.getMessage());
 		}
 	}
@@ -83,7 +87,7 @@ public class WebServer {
 	 */
 	private static void loadConfiguration(String[] startArguments) {
 
-		// XXX
+		// XXX [sne] remove old configuration loading
 		// if (startArguments.length == 2 && startArguments[0].equals("-c")) {
 		// File configFile = new File(startArguments[1]);
 		// if (configFile.isFile() && configFile.canRead()) {

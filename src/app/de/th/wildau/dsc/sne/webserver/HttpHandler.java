@@ -43,7 +43,7 @@ class HttpHandler implements Runnable {
 			processRequest(input, output);
 			closeConnection();
 		} catch (IOException ex) {
-			Log.error("Http handle exception!", ex.getMessage());
+			Log.error("Http handle exception!", ex);
 		}
 	}
 
@@ -54,7 +54,7 @@ class HttpHandler implements Runnable {
 					new InputStreamReader(input));
 			File requestResource = null;
 
-			// FIXME take a long time
+			// FIXME [sne] [dsc] take a long time
 			// String readLine;
 			// while ((readLine = bufferedReader.readLine()) != null) {
 			// Log.debug("Request header ["
@@ -77,9 +77,8 @@ class HttpHandler implements Runnable {
 			}
 
 			if (requestResource == null) {
-				Log.fatal(
-						"Doesn't find a resource string in the request header.",
-						firstRequestLine);
+				Log.fatal("Doesn't find a resource string in the request header. "
+						+ firstRequestLine);
 				return;
 			}
 
@@ -98,9 +97,8 @@ class HttpHandler implements Runnable {
 
 				if (requestResource.canRead()) {
 
-					// TODO [sne] exist a index file
-					// TODO return index file
-					// TODO [dsc] return list (links) of files
+					// TODO [dsc] exist a index file? > yes > show | or return
+					// list (links) of files
 					httpWriter = new HttpWriter(200);
 					httpWriter.write(output, requestResource);
 				} else {
@@ -129,7 +127,7 @@ class HttpHandler implements Runnable {
 		} catch (IOException ex) {
 			Log.error("Can not read request: " + ex.getMessage());
 		} catch (Exception ex) {
-			Log.fatal("Catch processRequest() exception!", ex.getMessage());
+			Log.fatal("Catch processRequest() exception!", ex);
 		}
 	}
 
@@ -147,7 +145,7 @@ class HttpHandler implements Runnable {
 			}
 			this.socket.getInputStream().close();
 		} catch (IOException ex) {
-			Log.error("Close connection.", ex.getMessage());
+			Log.error("Close connection.", ex);
 		}
 		Log.info(this.socket.getInetAddress().getHostName()
 				+ " client connection done.");

@@ -1,8 +1,8 @@
 <servernode>
 	<name>WebServer by dsc and sne</name>
 	<port>1337</port>
-	<webroot>/</web-root>
-	<logroot>/</log-root>
+	<webroot>/absolut/path</web-root>
+	<logroot>/absolut/path</log-root>
 	<loglevel>info</log-level>
 	<directoryindex>
 		<item>index.html</item>

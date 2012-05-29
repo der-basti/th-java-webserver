@@ -61,7 +61,11 @@ Betriebssysteme - Belegarbeit
 [ok]- log - log levels
 - log - zip old log files (automatic)
 - implement a cache
+- DOS attacks?
+- .htaccess
+- custom 404 page
 - http://huschi.net/20_91_de.html
+- execute php, perl, ruby, python, …
 
 =============================================================================
 ==== DOCUMENTATION

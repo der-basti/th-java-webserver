@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,9 +34,9 @@ final class Configuration {
 		logRoot = new File(configurationFile.getLogRoot());
 		logLevel = LogLevel.valueOf(configurationFile.getLogLevel()
 				.toUpperCase());
-		// for (String str : configurationFile.getDirectoryIndex()) {
-		// directoryIndex.add(str);
-		// }
+		for (String str : configurationFile.getDirectoryIndex()) {
+			directoryIndex.add(str);
+		}
 	}
 
 	private Configuration(File configFile) {
@@ -62,7 +63,7 @@ final class Configuration {
 	protected static Configuration getInstance() {
 		return instance;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("Configuration [");
@@ -71,8 +72,8 @@ final class Configuration {
 		sb.append("webRoot: ").append(webRoot.getAbsolutePath()).append("; ");
 		sb.append("logRoot: ").append(logRoot.getAbsolutePath()).append("; ");
 		sb.append("logLevel: ").append(logLevel).append("; ");
-		// sb.append("directoryIndex: ").append(
-		// Arrays.toString(this.directoryIndex.toArray()));
+		sb.append("directoryIndex: ").append(
+				Arrays.toString(directoryIndex.toArray()));
 		return sb.append("]").toString();
 	}
 

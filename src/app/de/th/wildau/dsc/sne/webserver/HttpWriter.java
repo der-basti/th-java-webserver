@@ -56,8 +56,7 @@ class HttpWriter {
 			outputStream.write(response.getBytes());
 			outputStream.flush();
 		} catch (IOException ex) {
-			Log.error("Can not write response / output stream! ",
-					ex.getMessage());
+			Log.error("Can not write response / output stream! ", ex);
 		}
 	}
 
@@ -75,7 +74,7 @@ class HttpWriter {
 		switch (this.httpStatusCode) {
 		case 200:
 			header += "HTTP/1.1 200 OK" + getLineBreak();
-			// XXX
+			// XXX [dsc] [sne] what is with a dir?
 			if (!requestResource.isDirectory()) {
 				header += "Content-Type: " + getContentType(requestResource)
 						+ getLineBreak();
@@ -86,11 +85,7 @@ class HttpWriter {
 					+ getLineBreak();
 			break;
 		case 403:
-			// TODO
-			/*
-			 * <html><body>Forbidden<br /> You don't have permission to access
-			 * /foo/bar/ on this server.</body></html>
-			 */
+			// TODO [dsc] implement 403 forbidden header
 			break;
 		case 404:
 			header += "HTTP/1.1 404 File Not Found" + getLineBreak()
@@ -98,8 +93,7 @@ class HttpWriter {
 					+ "Content-Length: " + body.length();
 			break;
 		default:
-			// TODO 500 Internal Server Error
-			body += "<h1>500 Internal Server Error</h1>";
+			// TODO [dsc] implement 500 Internal Server Error body
 			break;
 		}
 
@@ -124,6 +118,7 @@ class HttpWriter {
 		case 200:
 
 			if (requestResource.isFile()) {
+				// return the file (direct)
 				if (getContentType(requestResource).startsWith("image")) {
 					try {
 						sendBytes(new FileInputStream(requestResource),
@@ -132,6 +127,7 @@ class HttpWriter {
 						ex.printStackTrace();
 					}
 				} else {
+					// read the file and return it
 					BufferedReader bufferedReader = null;
 					try {
 						bufferedReader = new BufferedReader(
@@ -143,10 +139,16 @@ class HttpWriter {
 						}
 						bufferedReader.close();
 					} catch (IOException ex) {
-						Log.error("Can not read file.", ex.getMessage());
+						Log.error("Can not read file.", ex);
 					} finally {
 						if (bufferedReader != null) {
-							// XXX bufferedReader.close();
+							try {
+								bufferedReader.close();
+							} catch (IOException ex) {
+								Log.error(
+										"Can not close the request resource file.",
+										ex);
+							}
 						}
 					}
 				}
@@ -160,9 +162,22 @@ class HttpWriter {
 				body += "</ul></body></html>";
 			}
 			break;
+		case 403:
+			// TODO [dsc] implement 403 forbidden body
+			/*
+			 * <html><body>Forbidden<br /> You don't have permission to access
+			 * /foo/bar/ on this server.</body></html>
+			 */
+			break;
+		case 500:
+			body += "<html><body>";
+			body += "<h1>500 Internal Server Error</h1>";
+			body += "</body></html>";
+			break;
 		case 404:
+			// XXX [dsc] [sne] good solution? 404 & default, separate default or
+			// 500 and default
 		default:
-			// XXX good solution?
 			body += "<html><body>";
 			body += "<h1>Error 404</h1><h2>File Not Found.</h2>";
 			body += "</body></html>";
@@ -174,7 +189,8 @@ class HttpWriter {
 
 	private String getLineBreak() {
 
-		// XXX return System.getProperty("line.separator");
+		// XXX [dsc] check win, lin, mac default line separator
+		// return System.getProperty("line.separator");
 		return "\r\n";
 	}
 

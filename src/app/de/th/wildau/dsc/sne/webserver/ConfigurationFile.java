@@ -1,8 +1,13 @@
 package de.th.wildau.dsc.sne.webserver;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -19,10 +24,9 @@ public class ConfigurationFile {
 	private String logRoot;
 	@XmlElement(name = "loglevel", required = true)
 	private String logLevel;
-
-	// @XmlElementWrapper(name = "directoryIndex", required = false)
-	// @XmlElement(name = "item")
-	// private List<String> directoryIndex = new ArrayList<String>();
+	@XmlElementWrapper(name = "directoryIndex", required = false)
+	@XmlElement(name = "item")
+	private List<String> directoryIndex = new ArrayList<String>();
 
 	@Override
 	public String toString() {
@@ -33,7 +37,8 @@ public class ConfigurationFile {
 		sb.append(" webRoot:").append(this.webRoot);
 		sb.append(" logRoot:").append(this.logRoot);
 		sb.append(" logLevel:").append(this.logLevel);
-		// sb.append(" directoryIndex:").append(Arrays.toString(this.directoryIndex.toArray()));
+		sb.append(" directoryIndex:").append(
+				Arrays.toString(this.directoryIndex.toArray()));
 		return sb.append("]").toString();
 	}
 
@@ -77,11 +82,11 @@ public class ConfigurationFile {
 		this.logLevel = logLevel;
 	}
 
-	// public List<String> getDirectoryIndex() {
-	// return this.directoryIndex;
-	// }
-	//
-	// public void setDirectoryIndex(List<String> directoryIndex) {
-	// this.directoryIndex = directoryIndex;
-	// }
+	public List<String> getDirectoryIndex() {
+		return this.directoryIndex;
+	}
+
+	public void setDirectoryIndex(List<String> directoryIndex) {
+		this.directoryIndex = directoryIndex;
+	}
 }

@@ -199,9 +199,9 @@ public class Log {
 	 * @param text
 	 * @param errorMessage
 	 */
-	public static void error(String text, String errorMessage) {
+	public static void error(String text, Exception errorMessage) {
 
-		log(LogLevel.ERROR, text + " [" + errorMessage + "]");
+		log(LogLevel.ERROR, text + " [" + errorMessage.getMessage() + "]");
 	}
 
 	/**
@@ -220,8 +220,8 @@ public class Log {
 	 * @param text
 	 * @param fatalMessage
 	 */
-	public static void fatal(String text, String fatalMessage) {
+	public static void fatal(String text, Exception fatalMessage) {
 
-		log(LogLevel.FATAL, text + " [" + fatalMessage + "]");
+		log(LogLevel.FATAL, text + " [" + fatalMessage.getMessage() + "]");
 	}
 }
