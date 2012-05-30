@@ -69,12 +69,12 @@ class HttpWriter {
 	 */
 	private String generateHeader(String body, File requestResource) {
 
+		// TODO [dsc] 
 		String header = new String();
 
 		switch (this.httpStatusCode) {
 		case 200:
 			header += "HTTP/1.1 200 OK" + getLineBreak();
-			// XXX [dsc] [sne] what is with a dir?
 			if (!requestResource.isDirectory()) {
 				header += "Content-Type: " + getContentType(requestResource)
 						+ getLineBreak();
@@ -110,7 +110,10 @@ class HttpWriter {
 	 * @param requestResource
 	 * @return http body string
 	 */
+	@Deprecated
 	private String generateBody(OutputStream outputStream, File requestResource) {
+
+		// FIXME [dsc] [sne] void method and send 'file' direct
 
 		String body = new String();
 
@@ -118,6 +121,7 @@ class HttpWriter {
 		case 200:
 
 			if (requestResource.isFile()) {
+
 				// return the file (direct)
 				if (getContentType(requestResource).startsWith("image")) {
 					try {
@@ -175,13 +179,12 @@ class HttpWriter {
 			body += "</body></html>";
 			break;
 		case 404:
-			// XXX [dsc] [sne] good solution? 404 & default, separate default or
-			// 500 and default
-		default:
 			body += "<html><body>";
 			body += "<h1>Error 404</h1><h2>File Not Found.</h2>";
 			body += "</body></html>";
 			break;
+		default:
+			throw new IllegalStateException("Invalid http status code.");
 		}
 
 		return body;

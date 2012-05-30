@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,17 +15,21 @@ import java.util.List;
  * 
  */
 public class ScriptExecutor {
+	
+	public static void main(String[] args) {
+		
+		List<ScriptLanguage> list = ScriptExecutor.getSupportedScriptLanguages();
+		System.out.println(Arrays.toString(list.toArray()));
+		ScriptExecutor se = new ScriptExecutor();
+		System.out.println(se.execute(list.get(0), new File("/Users/sne/Public/hello.php")));
+	}
 
 	public enum ScriptLanguage {
-		PHP("", "php"), PERL("", "pl"), PYTHON("", "ph"), RUBY("", "rb");
+		PHP("", "php"), PERL("", "pl"), PYTHON("", "py"), RUBY("", "rb");
 		private String executeComand;
 		private String fileExtension;
 
 		private ScriptLanguage(String executeCommand, String fileExtension) {
-			this.executeComand = executeCommand;
-		}
-
-		ScriptLanguage(String executeCommand) {
 			this.executeComand = executeCommand;
 		}
 
@@ -78,16 +83,16 @@ public class ScriptExecutor {
 			scriptLanguages.add(sl);
 		}
 
-		// python
-		if (!se.execute("python -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PYTHON;
-			sl.setExecuteComand("python");
-			scriptLanguages.add(sl);
-		} else if (!se.execute("/usr/bin/python -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PYTHON;
-			sl.setExecuteComand("/usr/bin/python");
-			scriptLanguages.add(sl);
-		}
+//		// python
+//		if (!se.execute("python").trim().isEmpty()) {
+//			ScriptLanguage sl = ScriptLanguage.PYTHON;
+//			sl.setExecuteComand("python");
+//			scriptLanguages.add(sl);
+//		} else if (!se.execute("/usr/bin/python").trim().isEmpty()) {
+//			ScriptLanguage sl = ScriptLanguage.PYTHON;
+//			sl.setExecuteComand("/usr/bin/python");
+//			scriptLanguages.add(sl);
+//		}
 
 		// ruby
 		if (!se.execute("ruby -version").trim().isEmpty()) {
@@ -120,6 +125,8 @@ public class ScriptExecutor {
 	 */
 	private String execute(String command) {
 
+		System.out.println(command);
+		
 		Process process;
 		try {
 			process = Runtime.getRuntime().exec(command);

@@ -81,6 +81,8 @@ class HttpHandler implements Runnable {
 						+ firstRequestLine);
 				return;
 			}
+			
+			// check cache
 
 			Log.debug("request resource: " + requestResource.toString());
 			HttpWriter httpWriter = null;
@@ -139,7 +141,7 @@ class HttpHandler implements Runnable {
 		try {
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(),
 					true);
-			// check is output socket closed
+			// check is output socket closed / has errors
 			if (out.checkError()) {
 				this.socket.getOutputStream().close();
 			}

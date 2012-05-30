@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -34,6 +33,11 @@ public class WebServer {
 	 */
 	public static void main(String[] startArguments) {
 
+		new WebServer(startArguments);
+	}
+
+	public WebServer(String[] startArguments) {
+
 		loadConfiguration(startArguments);
 
 		Log.info("instantiating web server");
@@ -41,23 +45,22 @@ public class WebServer {
 			ServerSocket server = new ServerSocket(Configuration.getPort());
 			Log.debug("bound port " + Configuration.getPort());
 
-			@SuppressWarnings("unused")
-			List<HttpHandler> worker = Collections
-					.synchronizedList(new ArrayList<HttpHandler>());
-
 			int corePoolSize = Runtime.getRuntime().availableProcessors();
 			int maxPoolSize = corePoolSize + 1;
 			ArrayBlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(
 					maxPoolSize);
-			long keepAliveTime = 5000;
+			List<HttpHandler> worker = Collections
+					.synchronizedList(new ArrayList<HttpHandler>());
+			long keepAliveTime = 5;
 			// XXX [sne] http://www.ibm.com/developerworks/library/j-jtp0730/
 			ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
 					corePoolSize, maxPoolSize, keepAliveTime,
-					TimeUnit.MILLISECONDS, workQueue);
+					TimeUnit.SECONDS, workQueue);
 			threadPool.prestartAllCoreThreads();
 
 			// TODO [sne] implement script execution
 			ScriptExecutor scriptExecutor = new ScriptExecutor();
+			ScriptExecutor.getSupportedScriptLanguages();
 
 			while (true) {
 				Socket socket;
@@ -87,30 +90,6 @@ public class WebServer {
 	 */
 	private static void loadConfiguration(String[] startArguments) {
 
-		// XXX [sne] remove old configuration loading
-		// if (startArguments.length == 2 && startArguments[0].equals("-c")) {
-		// File configFile = new File(startArguments[1]);
-		// if (configFile.isFile() && configFile.canRead()) {
-		// Configuration.create(configFile);
-		// } else {
-		// throw new IllegalArgumentException(
-		// "Can not read the server configuration ("
-		// + configFile.toString()
-		// + "). Please read the manual.");
-		// }
-		// } else if (startArguments.length == 0) {
-		// InputStream is = WebServer.class
-		// .getResourceAsStream("server.conf.default");
-		// Configuration.create(is);
-		// } else if (startArguments.length == 1
-		// && (startArguments[0].equals("-h") || startArguments[0]
-		// .equals("-?"))) {
-		// // (http://commons.apache.org/cli/)
-		// } else {
-		// throw new IllegalArgumentException(
-		// "Illegal start arguments. See manual or option -h / -?.");
-		// }
-
 		Options options = new Options();
 		options.addOption("c", true, "specify server configuration file");
 		HelpFormatter helpFormatter = new HelpFormatter();
@@ -124,20 +103,24 @@ public class WebServer {
 					+ ex.getMessage());
 		}
 
-		if (cmd.hasOption("c")) {
-			File configFile = new File(cmd.getOptionValue("c"));
-			if (configFile.isFile() && configFile.canRead()) {
-				Configuration.create(configFile);
+		try {
+			if (cmd.hasOption("c")) {
+				File configFile = new File(cmd.getOptionValue("c"));
+				if (configFile.isFile() && configFile.canRead()) {
+					Configuration.create(configFile);
+				}
+			} else {
+				// load default configuration
+				InputStream is = WebServer.class
+						.getResourceAsStream("server.conf.default");
+				Configuration.create(is);
 			}
-		} else {
-			// load default configuration
-			InputStream is = WebServer.class
-					.getResourceAsStream("server.conf.default");
-			Configuration.create(is);
-		}
 
-		Log.createInstance();
-		Log.info("loaded server configuration");
-		Log.debug(Configuration.getInstance().toString());
+			Log.createInstance();
+			Log.info("loaded server configuration");
+			Log.debug(Configuration.getInstance().toString());
+		} catch (Exception ex) {
+			System.err.println("Can not load server configuration file.");
+		}
 	}
 }

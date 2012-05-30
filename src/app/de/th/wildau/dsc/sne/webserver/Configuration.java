@@ -53,7 +53,7 @@ final class Configuration {
 		try {
 			File temp = File.createTempFile("server.conf", ".default");
 			temp.deleteOnExit();
-			instance = new Configuration(temp);
+			create(temp);
 		} catch (IOException ex) {
 			throw new IllegalStateException(
 					"Can not load default configuration. " + ex.getMessage());
