@@ -160,6 +160,7 @@ class HttpWriter {
 				body += "<html><body><ul>";
 				for (File file : requestResource
 						.listFiles(new HiddenFileFilter())) {
+					// FIXME [dsc] [sne] case sub directories
 					body += "<li><a href=\"" + file.getName() + "\">"
 							+ file.getName() + "</a></li>";
 				}
