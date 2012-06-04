@@ -112,12 +112,9 @@ class HttpWriter {
 	 * @param requestResource
 	 * @return http body string
 	 */
-	@Deprecated
-	private String generateBody(OutputStream outputStream, File requestResource) {
+	private File generateBody(OutputStream outputStream, File requestResource) {
 
 		// FIXME [dsc] [sne] void method and send 'file' direct
-
-		String body = new String();
 
 		switch (this.httpStatusCode) {
 		case 200:
