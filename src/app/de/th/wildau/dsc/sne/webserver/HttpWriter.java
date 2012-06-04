@@ -1,18 +1,15 @@
 package de.th.wildau.dsc.sne.webserver;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.URISyntaxException;
 
 class HttpWriter {
 
@@ -62,6 +59,8 @@ class HttpWriter {
 		outputStream.flush();
 	} catch (final IOException ex) {
 		Log.error("Can not write response / output stream! ", ex);
+	} catch (URISyntaxException e) {
+		Log.error("Can't read resource from JAR file.", e);
 	}
 }
 
@@ -82,7 +81,7 @@ private static byte[] getByteArray(File file) throws IOException,
 	 * @param requestResource
 	 * @return String http header
 	 */
-	private String generateHeader(String body, File requestResource) {
+	private String generateHeader(long bodyLength, File requestResource) {
 
 		// TODO [dsc]
 		String header = new String();
@@ -105,7 +104,7 @@ private static byte[] getByteArray(File file) throws IOException,
 		case 404:
 			header += "HTTP/1.1 404 File Not Found" + getLineBreak()
 					+ "Content-Type: text/html" + getLineBreak()
-					+ "Content-Length: " + body.length();
+					+ "Content-Length: " + bodyLength;
 			break;
 		default:
 			// TODO [dsc] implement 500 Internal Server Error body
@@ -124,109 +123,113 @@ private static byte[] getByteArray(File file) throws IOException,
 	 * @param outputStream
 	 * @param requestResource
 	 * @return http body string
+	 * @throws IOException 
+	 * @throws URISyntaxException 
 	 */
-	private File generateBody(OutputStream outputStream, File requestResource) {
+	private File generateBody(OutputStream outputStream, File requestResource) throws IOException, URISyntaxException {
 
 		// FIXME [dsc] [sne] void method and send 'file' direct
-
-		File tempFile;
-		PrintWriter tempFilePrintWriter = new PrintWriter(new BufferedWriter(
-				new FileWriter(tempFile)));
-
+		
+		File tempFile = null;
+		
 		switch (this.httpStatusCode) {
 		case 200:
 
 			if (requestResource.isFile()) {
 
 				// return the file (direct)
-				if (getContentType(requestResource).startsWith("image")) {
-					try {
-
-						// XXX TEST
-						if (HttpCache.getInstance().contains(
-								"" + requestResource.hashCode())) {
-
-							byte[] buffer = new byte[1024];
-							int bytes = 0;
-							try {
-								FileInputStream fis = new FileInputStream(
-										requestResource);
-								while ((bytes = fis.read(buffer)) != -1) {
-									outputStream.write(buffer, 0, bytes);
-								}
-							} catch (final Exception ex) {
-								Log.error("Can not read file.", ex);
-							}
-						} else {
-							// add to cache
-							List<Integer> tempList = new ArrayList<Integer>();
-							byte[] buffer = new byte[1024];
-							int bytes = 0;
-							try {
-								FileInputStream fis = new FileInputStream(
-										requestResource);
-								while ((bytes = fis.read(buffer)) != -1) {
-									tempList.add(bytes);
-								}
-							} catch (final Exception ex) {
-								Log.error("Can not read file.", ex);
-							}
-
-							int[] intArray = new int[tempList.size()];
-							int i = 0;
-							for (Integer e : tempList) {
-								intArray[i++] = e.intValue();
-							}
-
-							HttpCache.getInstance().put(
-									"" + requestResource.hashCode(), intArray);
-						}
-						// XXX TEST
-
-						sendBytes(new FileInputStream(requestResource),
-								outputStream);
-					} catch (final FileNotFoundException ex) {
-						ex.printStackTrace();
-					}
-				} else {
-					// handle script files
-					for (ScriptLanguage scriptLanguage : WebServer.supportedScriptLanguages) {
-						if (requestResource.getName().toLowerCase()
-								.endsWith(scriptLanguage.getFileExtension())) {
-							return new ScriptExecutor().execute(scriptLanguage,
-									requestResource);
-						}
-					}
-					// read the file and return it
-					BufferedReader bufferedReader = null;
-					try {
-						bufferedReader = new BufferedReader(
-								new InputStreamReader(new FileInputStream(
-										requestResource)));
-						String strLine;
-						while ((strLine = bufferedReader.readLine()) != null) {
-							body += strLine;
-						}
-						bufferedReader.close();
-					} catch (final IOException ex) {
-						Log.error("Can not read file.", ex);
-					} finally {
-						if (bufferedReader != null) {
-							try {
-								bufferedReader.close();
-							} catch (final IOException ex) {
-								Log.error(
-										"Can not close the request resource file.",
-										ex);
-							}
-						}
-					}
-				}
+//				if (getContentType(requestResource).startsWith("image")) {
+//					try {
+//
+//						// XXX TEST
+//						if (HttpCache.getInstance().contains(
+//								"" + requestResource.hashCode())) {
+//
+//							byte[] buffer = new byte[1024];
+//							int bytes = 0;
+//							try {
+//								FileInputStream fis = new FileInputStream(
+//										requestResource);
+//								while ((bytes = fis.read(buffer)) != -1) {
+//									outputStream.write(buffer, 0, bytes);
+//								}
+//							} catch (final Exception ex) {
+//								Log.error("Can not read file.", ex);
+//							}
+//						} else {
+//							// add to cache
+//							List<Integer> tempList = new ArrayList<Integer>();
+//							byte[] buffer = new byte[1024];
+//							int bytes = 0;
+//							try {
+//								FileInputStream fis = new FileInputStream(
+//										requestResource);
+//								while ((bytes = fis.read(buffer)) != -1) {
+//									tempList.add(bytes);
+//								}
+//							} catch (final Exception ex) {
+//								Log.error("Can not read file.", ex);
+//							}
+//
+//							int[] intArray = new int[tempList.size()];
+//							int i = 0;
+//							for (Integer e : tempList) {
+//								intArray[i++] = e.intValue();
+//							}
+//
+//							HttpCache.getInstance().put(
+//									"" + requestResource.hashCode(), intArray);
+//						}
+//						// XXX TEST
+//
+//						sendBytes(new FileInputStream(requestResource),
+//								outputStream);
+//					} catch (final FileNotFoundException ex) {
+//						ex.printStackTrace();
+//					}
+//				} else {
+//					// handle script files
+//					for (ScriptLanguage scriptLanguage : WebServer.supportedScriptLanguages) {
+//						if (requestResource.getName().toLowerCase()
+//								.endsWith(scriptLanguage.getFileExtension())) {
+//							return new ScriptExecutor().execute(scriptLanguage,
+//									requestResource);
+//						}
+//					}
+//					// read the file and return it
+//					BufferedReader bufferedReader = null;
+//					try {
+//						bufferedReader = new BufferedReader(
+//								new InputStreamReader(new FileInputStream(
+//										requestResource)));
+//						String strLine;
+//						while ((strLine = bufferedReader.readLine()) != null) {
+//							body += strLine;
+//						}
+//						bufferedReader.close();
+//					} catch (final IOException ex) {
+//						Log.error("Can not read file.", ex);
+//					} finally {
+//						if (bufferedReader != null) {
+//							try {
+//								bufferedReader.close();
+//							} catch (final IOException ex) {
+//								Log.error(
+//										"Can not close the request resource file.",
+//										ex);
+//							}
+//						}
+//					}
+//				}
+				
+				tempFile = requestResource;
 			} else if (requestResource.isDirectory()
 					&& requestResource.canRead()) {
 
-				File.createTempFile("directorylisting", "html");
+				tempFile = File.createTempFile("directorylisting", "html");
 				tempFile.deleteOnExit();
+				PrintWriter tempFilePrintWriter = new PrintWriter(new BufferedWriter(
+						new FileWriter(tempFile)));
 				tempFilePrintWriter.print("<html><body><ul>");
 				for (File file : requestResource.listFiles(new HiddenFilter())) {
 					// FIXME [dsc] [sne] case sub directories
@@ -234,24 +237,22 @@ private static byte[] getByteArray(File file) throws IOException,
 							+ "\">" + file.getName() + "</a></li>");
 				}
 				tempFilePrintWriter.print("</ul></body></html>");
+				tempFilePrintWriter.flush();
+				tempFilePrintWriter.close();
 			}
 			break;
 		case 403:
 			tempFile = new File(WebServer.class.getClassLoader().getResource("403.html").toURI());
-			return tempFile;
 			break;
 		case 404:
 			tempFile = new File(WebServer.class.getClassLoader().getResource("404.html").toURI());
-			return tempFile;
 			break;
 		case 500:
 			tempFile = new File(WebServer.class.getClassLoader().getResource("500.html").toURI());
-			return tempFile;
 			break;
 		default:
 			throw new IllegalStateException("Invalid http status code.");
 		}
-		tempFilePrintWriter.flush();
 		return tempFile;
 	}
 	
