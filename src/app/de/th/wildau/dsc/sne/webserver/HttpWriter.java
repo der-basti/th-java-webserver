@@ -51,28 +51,35 @@ class HttpWriter {
 		Log.debug("ContextType: " + getContentType(requestResource));
 
 		// generate and append the response
-	try {
-		File bodyFile = generateBody(outputStream, requestResource);
-		outputStream.write(generateHeader(bodyFile.length(),
-				requestResource).getBytes());
-		outputStream.write(getByteArray(bodyFile));
-		outputStream.flush();
-	} catch (final IOException ex) {
-		Log.error("Can not write response / output stream! ", ex);
-	} catch (URISyntaxException e) {
-		Log.error("Can't read resource from JAR file.", e);
+		try {
+			File bodyFile = generateBody(outputStream, requestResource);
+			outputStream.write(generateHeader(bodyFile.length(),
+					requestResource).getBytes());
+			outputStream.write(getByteArray(bodyFile));
+			outputStream.flush();
+		} catch (final IOException ex) {
+			Log.error("Can not write response / output stream! ", ex);
+		} catch (URISyntaxException e) {
+			Log.error("Can't read resource from JAR file.", e);
+		}
 	}
-}
 
-private static byte[] getByteArray(File file) throws IOException,
-		UnsupportedEncodingException {
-
-	FileInputStream fileInputStream = new FileInputStream(file);
-	byte[] data = new byte[(int) file.length()];
-	fileInputStream.read(data);
-	fileInputStream.close();
-	return new String(data, "UTF-8").getBytes();
-}
+	private byte[] getByteArray(File file) throws IOException,
+			UnsupportedEncodingException {
+		if (getContentType(file).startsWith("text")) {
+			FileInputStream fileInputStream = new FileInputStream(file);
+			byte[] data = new byte[(int) file.length()];
+			fileInputStream.read(data);
+			fileInputStream.close();
+			return new String(data, "UTF-8").getBytes();
+		} else {
+			FileInputStream fis = new FileInputStream(file);
+			byte[] byteArray = new byte[(int) file.length()];
+			fis.read(byteArray);
+			fis.close();
+			return byteArray;
+		}
+	}
 
 	/**
 	 * Internal help method, which generate the http header.
@@ -123,8 +130,8 @@ private static byte[] getByteArray(File file) throws IOException,
 	 * @param outputStream
 	 * @param requestResource
 	 * @return http body string
-	 * @throws IOException 
-	 * @throws URISyntaxException 
+	 * @throws IOException
+	 * @throws URISyntaxException
 	 */
 	private File generateBody(OutputStream outputStream, File requestResource) throws IOException, URISyntaxException {
 
@@ -221,7 +228,6 @@ private static byte[] getByteArray(File file) throws IOException,
 //						}
 //					}
 //				}
-				
 				tempFile = requestResource;
 			} else if (requestResource.isDirectory()
 					&& requestResource.canRead()) {
@@ -255,9 +261,6 @@ private static byte[] getByteArray(File file) throws IOException,
 		}
 		return tempFile;
 	}
-	
-	
-	
 
 	private String getLineBreak() {
 
