@@ -8,11 +8,11 @@ import java.io.File;
  * @author sne
  * 
  */
-public class HiddenFileFilter implements java.io.FileFilter {
+public class HiddenFilter implements java.io.FileFilter {
 
 	@Override
 	public boolean accept(File file) {
-		if (file.isFile() && file.canRead()) {
+		if (file.canRead()) {
 			if (file.getName().startsWith(".") || file.isHidden()) {
 				return false;
 			}

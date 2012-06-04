@@ -1,12 +1,15 @@
 package de.th.wildau.dsc.sne.webserver;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,6 +119,10 @@ class HttpWriter {
 
 		// FIXME [dsc] [sne] void method and send 'file' direct
 
+		File tempFile;
+		PrintWriter tempFilePrintWriter = new PrintWriter(new BufferedWriter(
+				new FileWriter(tempFile)));
+
 		switch (this.httpStatusCode) {
 		case 200:
 
@@ -124,14 +131,16 @@ class HttpWriter {
 				// return the file (direct)
 				if (getContentType(requestResource).startsWith("image")) {
 					try {
-						
+
 						// XXX TEST
-						if (HttpCache.getInstance().contains(""+requestResource.hashCode())) {
+						if (HttpCache.getInstance().contains(
+								"" + requestResource.hashCode())) {
 
 							byte[] buffer = new byte[1024];
 							int bytes = 0;
 							try {
-								FileInputStream fis = new FileInputStream(requestResource);
+								FileInputStream fis = new FileInputStream(
+										requestResource);
 								while ((bytes = fis.read(buffer)) != -1) {
 									outputStream.write(buffer, 0, bytes);
 								}
@@ -144,24 +153,26 @@ class HttpWriter {
 							byte[] buffer = new byte[1024];
 							int bytes = 0;
 							try {
-								FileInputStream fis = new FileInputStream(requestResource);
+								FileInputStream fis = new FileInputStream(
+										requestResource);
 								while ((bytes = fis.read(buffer)) != -1) {
 									tempList.add(bytes);
 								}
 							} catch (final Exception ex) {
 								Log.error("Can not read file.", ex);
 							}
-							
+
 							int[] intArray = new int[tempList.size()];
 							int i = 0;
 							for (Integer e : tempList) {
 								intArray[i++] = e.intValue();
 							}
-							
-							HttpCache.getInstance().put(""+requestResource.hashCode(), intArray);							
+
+							HttpCache.getInstance().put(
+									"" + requestResource.hashCode(), intArray);
 						}
 						// XXX TEST
-						
+
 						sendBytes(new FileInputStream(requestResource),
 								outputStream);
 					} catch (final FileNotFoundException ex) {
@@ -201,40 +212,41 @@ class HttpWriter {
 						}
 					}
 				}
-			} else if (requestResource.isDirectory()) {
-				body += "<html><body><ul>";
-				for (File file : requestResource
-						.listFiles(new HiddenFileFilter())) {
+			} else if (requestResource.isDirectory()
+					&& requestResource.canRead()) {
+
+				File.createTempFile("directorylisting", "html");
+				tempFile.deleteOnExit();
+				tempFilePrintWriter.print("<html><body><ul>");
+				for (File file : requestResource.listFiles(new HiddenFilter())) {
 					// FIXME [dsc] [sne] case sub directories
-					body += "<li><a href=\"" + file.getName() + "\">"
-							+ file.getName() + "</a></li>";
+					tempFilePrintWriter.print("<li><a href=\"" + file.getName()
+							+ "\">" + file.getName() + "</a></li>");
 				}
-				body += "</ul></body></html>";
+				tempFilePrintWriter.print("</ul></body></html>");
 			}
 			break;
 		case 403:
-			// TODO [dsc] implement 403 forbidden body
-			/*
-			 * <html><body>Forbidden<br /> You don't have permission to access
-			 * /foo/bar/ on this server.</body></html>
-			 */
-			break;
-		case 500:
-			body += "<html><body>";
-			body += "<h1>500 Internal Server Error</h1>";
-			body += "</body></html>";
+			tempFile = new File(WebServer.class.getClassLoader().getResource("403.html").toURI());
+			return tempFile;
 			break;
 		case 404:
-			body += "<html><body>";
-			body += "<h1>Error 404</h1><h2>File Not Found.</h2>";
-			body += "</body></html>";
+			tempFile = new File(WebServer.class.getClassLoader().getResource("404.html").toURI());
+			return tempFile;
+			break;
+		case 500:
+			tempFile = new File(WebServer.class.getClassLoader().getResource("500.html").toURI());
+			return tempFile;
 			break;
 		default:
 			throw new IllegalStateException("Invalid http status code.");
 		}
-
-		return body;
+		tempFilePrintWriter.flush();
+		return tempFile;
 	}
+	
+	
+	
 
 	private String getLineBreak() {
 
