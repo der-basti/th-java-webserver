@@ -54,16 +54,26 @@ class HttpWriter {
 		Log.debug("ContextType: " + getContentType(requestResource));
 
 		// generate and append the response
-		String tempBody = generateBody(outputStream, requestResource);
-		String response = generateHeader(tempBody, requestResource) + tempBody;
-
-		try {
-			outputStream.write(response.getBytes());
-			outputStream.flush();
-		} catch (final IOException ex) {
-			Log.error("Can not write response / output stream! ", ex);
-		}
+	try {
+		File bodyFile = generateBody(outputStream, requestResource);
+		outputStream.write(generateHeader(bodyFile.length(),
+				requestResource).getBytes());
+		outputStream.write(getByteArray(bodyFile));
+		outputStream.flush();
+	} catch (final IOException ex) {
+		Log.error("Can not write response / output stream! ", ex);
 	}
+}
+
+private static byte[] getByteArray(File file) throws IOException,
+		UnsupportedEncodingException {
+
+	FileInputStream fileInputStream = new FileInputStream(file);
+	byte[] data = new byte[(int) file.length()];
+	fileInputStream.read(data);
+	fileInputStream.close();
+	return new String(data, "UTF-8").getBytes();
+}
 
 	/**
 	 * Internal help method, which generate the http header.
