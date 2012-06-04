@@ -10,21 +10,30 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 
+/**
+ * JAXB file for the server configuration.
+ * 
+ * @author sne
+ * 
+ */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name = "servernode")
+@XmlRootElement(name = "server-node")
 public class ConfigurationFile {
 
-	@XmlElement(name = "name", required = true)
+	@XmlElement(name = "server-name", required = true)
 	private String serverName;
-	@XmlElement(name = "port", required = true)
+	@XmlElement(name = "server-port", required = true)
 	private int serverPort;
-	@XmlElement(name = "webroot", required = true)
+	@XmlElement(name = "web-root", required = true)
 	private String webRoot;
-	@XmlElement(name = "logroot", required = true)
+	@XmlElement(name = "log-root", required = true)
 	private String logRoot;
-	@XmlElement(name = "loglevel", required = true)
+	@XmlElement(name = "log-level", required = true)
 	private String logLevel;
-	@XmlElementWrapper(name = "directoryIndex", required = false)
+	// XXX proxy config
+	// XXX http status pages
+	// XXX gzip
+	@XmlElementWrapper(name = "directory-index", required = false)
 	@XmlElement(name = "item")
 	private List<String> directoryIndex = new ArrayList<String>();
 
@@ -32,12 +41,12 @@ public class ConfigurationFile {
 	public String toString() {
 
 		StringBuilder sb = new StringBuilder("ConfigurationFile [");
-		sb.append("serverName:").append(this.serverName);
-		sb.append(" serverPort:").append(this.serverPort);
-		sb.append(" webRoot:").append(this.webRoot);
-		sb.append(" logRoot:").append(this.logRoot);
-		sb.append(" logLevel:").append(this.logLevel);
-		sb.append(" directoryIndex:").append(
+		sb.append("server-name:").append(this.serverName);
+		sb.append(" server-port:").append(this.serverPort);
+		sb.append(" web-root:").append(this.webRoot);
+		sb.append(" log-root:").append(this.logRoot);
+		sb.append(" log-level:").append(this.logLevel);
+		sb.append(" directory-index:").append(
 				Arrays.toString(this.directoryIndex.toArray()));
 		return sb.append("]").toString();
 	}

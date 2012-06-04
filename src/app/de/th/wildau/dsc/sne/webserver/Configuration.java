@@ -11,32 +11,34 @@ import java.util.List;
 import javax.xml.bind.JAXB;
 
 /**
- * WebServer Configuration.
+ * WebServer Configuration Singelton.
  * 
  * @author dsc and sne
  */
 final class Configuration {
 
-	private static Configuration instance;
+	private static Configuration INSTANCE;
 
-	private static String serverName;
-	private static int port;
-	private static File webRoot;
-	private static File logRoot;
-	private static LogLevel logLevel;
-	private static List<String> directoryIndex = new ArrayList<String>();
+	private final String serverName;
+	private final int port;
+	private final File webRoot;
+	private final File logRoot;
+	private final LogLevel logLevel;
+	private final List<String> directoryIndex;
 
 	private Configuration(ConfigurationFile configurationFile) {
 
-		serverName = configurationFile.getServerName();
-		port = configurationFile.getServerPort();
-		webRoot = new File(configurationFile.getWebRoot());
-		logRoot = new File(configurationFile.getLogRoot());
-		logLevel = LogLevel.valueOf(configurationFile.getLogLevel()
+		this.serverName = configurationFile.getServerName();
+		this.port = configurationFile.getServerPort();
+		this.webRoot = new File(configurationFile.getWebRoot());
+		this.logRoot = new File(configurationFile.getLogRoot());
+		this.logLevel = LogLevel.valueOf(configurationFile.getLogLevel()
 				.toUpperCase());
+		List<String> tempList = new ArrayList<String>();
 		for (String str : configurationFile.getDirectoryIndex()) {
-			directoryIndex.add(str);
+			tempList.add(str);
 		}
+		this.directoryIndex = Collections.unmodifiableList(tempList);
 	}
 
 	private Configuration(File configFile) {
@@ -44,36 +46,51 @@ final class Configuration {
 		this(JAXB.unmarshal(configFile, ConfigurationFile.class));
 	}
 
-	public static void create(File configFile) {
-		instance = new Configuration(configFile);
+	public static synchronized void createInstance(File configFile) {
+
+		if (INSTANCE == null) {
+			INSTANCE = new Configuration(configFile);
+		}
 	}
 
-	public static void create(InputStream inputStream) {
+	public static synchronized void createInstance(InputStream inputStream) {
 
-		try {
-			File temp = File.createTempFile("server.conf", ".default");
-			temp.deleteOnExit();
-			create(temp);
-		} catch (IOException ex) {
-			throw new IllegalStateException(
-					"Can not load default configuration. " + ex.getMessage());
+		if (INSTANCE == null) {
+			try {
+				File temp = File.createTempFile("server.conf", ".default");
+				temp.deleteOnExit();
+				createInstance(temp);
+			} catch (final IOException ex) {
+				throw new IllegalStateException(
+						"Can not load default configuration. "
+								+ ex.getMessage());
+			}
 		}
 	}
 
 	protected static Configuration getInstance() {
-		return instance;
+
+		if (INSTANCE == null) {
+			throw new IllegalStateException(
+					"No configuration are loaded. Please call createInstance()");
+		}
+		return INSTANCE;
 	}
 
 	@Override
 	public String toString() {
+
 		StringBuilder sb = new StringBuilder("Configuration [");
-		sb.append("serverName: ").append(serverName).append("; ");
-		sb.append("port: ").append(port).append("; ");
-		sb.append("webRoot: ").append(webRoot.getAbsolutePath()).append("; ");
-		sb.append("logRoot: ").append(logRoot.getAbsolutePath()).append("; ");
-		sb.append("logLevel: ").append(logLevel).append("; ");
-		sb.append("directoryIndex: ").append(
-				Arrays.toString(directoryIndex.toArray()));
+		sb.append("server-name: ").append(getInstance().serverName)
+				.append("; ");
+		sb.append("server-port: ").append(getInstance().port).append("; ");
+		sb.append("web-root: ").append(getInstance().webRoot.getAbsolutePath())
+				.append("; ");
+		sb.append("log-root: ").append(getInstance().logRoot.getAbsolutePath())
+				.append("; ");
+		sb.append("log-level: ").append(getInstance().logLevel).append("; ");
+		sb.append("directory-index: ").append(
+				Arrays.toString(getInstance().directoryIndex.toArray()));
 		return sb.append("]").toString();
 	}
 
@@ -83,7 +100,7 @@ final class Configuration {
 	 * @return String serverName
 	 */
 	public static final String getServerName() {
-		return serverName;
+		return getInstance().serverName;
 	}
 
 	/**
@@ -92,7 +109,7 @@ final class Configuration {
 	 * @return port
 	 */
 	public static final int getPort() {
-		return port;
+		return getInstance().port;
 	}
 
 	/**
@@ -101,7 +118,7 @@ final class Configuration {
 	 * @return File webRoot
 	 */
 	public static final File getWebRoot() {
-		return webRoot;
+		return getInstance().webRoot;
 	}
 
 	/**
@@ -110,7 +127,7 @@ final class Configuration {
 	 * @return File logRoot
 	 */
 	public static final File getLogRoot() {
-		return logRoot;
+		return getInstance().logRoot;
 	}
 
 	/**
@@ -119,7 +136,7 @@ final class Configuration {
 	 * @return LogLevel
 	 */
 	public static final LogLevel getLogLevel() {
-		return logLevel;
+		return getInstance().logLevel;
 	}
 
 	/**
@@ -128,6 +145,6 @@ final class Configuration {
 	 * @return List<String> directoryIndex
 	 */
 	public static final List<String> getDirectoryIndex() {
-		return Collections.unmodifiableList(directoryIndex);
+		return Collections.unmodifiableList(getInstance().directoryIndex);
 	}
 }

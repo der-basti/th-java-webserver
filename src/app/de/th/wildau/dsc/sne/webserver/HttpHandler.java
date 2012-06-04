@@ -42,7 +42,7 @@ class HttpHandler implements Runnable {
 			OutputStream output = socket.getOutputStream();
 			processRequest(input, output);
 			closeConnection();
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			Log.error("Http handle exception!", ex);
 		}
 	}
@@ -54,34 +54,22 @@ class HttpHandler implements Runnable {
 					new InputStreamReader(input));
 			File requestResource = null;
 
-			// FIXME [sne] [dsc] take a long time
-			// String readLine;
-			// while ((readLine = bufferedReader.readLine()) != null) {
-			// Log.debug("Request header ["
-			// + this.socket.getInetAddress().getHostName() + "]: "
-			// + readLine); // support GET HTTP 1.0 & 1.1 requests
-			// if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", readLine)) {
-			// // requestResource = new File(Configuration.getWebRoot()
-			// // + readLine.split(" ")[1]);
-			// } else if (Pattern.matches("^POST /. HTTP/1.?", readLine)) {
-			// Log.warn("Doesn't support POST requests!");
-			// break;
-			// }
-			// }
-
-			String firstRequestLine = bufferedReader.readLine();
-			Log.debug("first request line: " + firstRequestLine);
-			if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", firstRequestLine)) {
-				requestResource = new File(Configuration.getWebRoot()
-						+ firstRequestLine.split(" ")[1]);
+			String line = "";
+			while (!(line = bufferedReader.readLine()).isEmpty()) {
+				Log.debug("Request header ["
+						+ this.socket.getInetAddress().getHostName() + "]: "
+						+ line);
+				// support GET ... HTTP 1.0 & 1.1 requests
+				if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", line)) {
+					requestResource = new File(Configuration.getWebRoot()
+							+ line.split(" ")[1]);
+				} else if (Pattern.matches("^POST /*.*", line)) {
+					Log.warn("Doesn't support POST requests!");
+					// TODO return error
+					break;
+				}
 			}
 
-			if (requestResource == null) {
-				Log.fatal("Doesn't find a resource string in the request header. "
-						+ firstRequestLine);
-				return;
-			}
-			
 			// check cache
 
 			Log.debug("request resource: " + requestResource.toString());
@@ -126,9 +114,10 @@ class HttpHandler implements Runnable {
 			} else {
 
 			}
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			Log.error("Can not read request: " + ex.getMessage());
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
+			// FIXME [sne] null point ex (get index.html)
 			Log.fatal("Catch processRequest() exception!", ex);
 		}
 	}
@@ -146,7 +135,7 @@ class HttpHandler implements Runnable {
 				this.socket.getOutputStream().close();
 			}
 			this.socket.getInputStream().close();
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			Log.error("Close connection.", ex);
 		}
 		Log.info(this.socket.getInetAddress().getHostName()

@@ -1,15 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <servernode>
-	<name>WebServer by dsc and sne</name>
-	<port>1337</port>
-	<webroot>/absolut/path</web-root>
-	<logroot>/absolut/path</log-root>
-	<loglevel>info</log-level>
-	<directoryindex>
+	<server-name>WebServer by dsc and sne</server-name>
+	<server-port>1337</server-port>
+	<web-root>/absolut/path</web-root>
+	<log-root>/absolut/path</log-root>
+	<log-level>info</log-level>
+	<directory-index>
 		<item>index.html</item>
 		<item>index.htm</item>
 		<item>default.html</item>
 		<item>default.htm</item>
 		<item>welcome.html</item>
 		<item>welcome.htm</item>
-	</directoryindex>
+	</directory-index>
 </servernode>

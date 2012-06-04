@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -26,6 +26,8 @@ import org.apache.commons.cli.PosixParser;
  */
 public class WebServer {
 
+	protected static List<ScriptLanguage> supportedScriptLanguages;
+
 	/**
 	 * The main method for the web server program.
 	 * 
@@ -40,27 +42,27 @@ public class WebServer {
 
 		loadConfiguration(startArguments);
 
+		// find scripting languages
+		supportedScriptLanguages = Collections.unmodifiableList(ScriptExecutor
+				.getSupportedScriptLanguages());
+		Log.debug("Supported Script Languages "
+				+ Arrays.toString(supportedScriptLanguages.toArray()));
+
 		Log.info("instantiating web server");
 		try {
 			ServerSocket server = new ServerSocket(Configuration.getPort());
 			Log.debug("bound port " + Configuration.getPort());
 
 			int corePoolSize = Runtime.getRuntime().availableProcessors();
-			int maxPoolSize = corePoolSize + 1;
-			ArrayBlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(
+			int maxPoolSize = (2 * corePoolSize) + 1;
+			ArrayBlockingQueue<Runnable> workerQueue = new ArrayBlockingQueue<Runnable>(
 					maxPoolSize);
-			List<HttpHandler> worker = Collections
-					.synchronizedList(new ArrayList<HttpHandler>());
 			long keepAliveTime = 5;
 			// XXX [sne] http://www.ibm.com/developerworks/library/j-jtp0730/
 			ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
-					corePoolSize, maxPoolSize, keepAliveTime,
-					TimeUnit.SECONDS, workQueue);
+					corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS,
+					workerQueue);
 			threadPool.prestartAllCoreThreads();
-
-			// TODO [sne] implement script execution
-			ScriptExecutor scriptExecutor = new ScriptExecutor();
-			ScriptExecutor.getSupportedScriptLanguages();
 
 			while (true) {
 				Socket socket;
@@ -68,15 +70,15 @@ public class WebServer {
 					socket = server.accept();
 					Log.info(socket.getInetAddress().getHostName()
 							+ " client request");
-					Log.debug("current threads: " + threadPool.getActiveCount());
 					threadPool.execute(new HttpHandler(socket));
-				} catch (IOException ex) {
+					Log.debug("current threads: " + threadPool.getActiveCount());
+				} catch (final IOException ex) {
 					Log.error("Connection failed!", ex);
-				} catch (Exception ex) {
+				} catch (final Exception ex) {
 					Log.fatal("Unknown error!", ex);
 				}
 			}
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			Log.fatal("Can not start the server!", ex);
 			System.err.println("Can not start the server! " + ex.getMessage());
 		}
@@ -98,7 +100,7 @@ public class WebServer {
 		CommandLine cmd;
 		try {
 			cmd = parser.parse(options, startArguments);
-		} catch (ParseException ex) {
+		} catch (final ParseException ex) {
 			throw new IllegalStateException("Can not parse start arguments. "
 					+ ex.getMessage());
 		}
@@ -107,19 +109,19 @@ public class WebServer {
 			if (cmd.hasOption("c")) {
 				File configFile = new File(cmd.getOptionValue("c"));
 				if (configFile.isFile() && configFile.canRead()) {
-					Configuration.create(configFile);
+					Configuration.createInstance(configFile);
 				}
 			} else {
 				// load default configuration
 				InputStream is = WebServer.class
 						.getResourceAsStream("server.conf.default");
-				Configuration.create(is);
+				Configuration.createInstance(is);
 			}
 
 			Log.createInstance();
 			Log.info("loaded server configuration");
 			Log.debug(Configuration.getInstance().toString());
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			System.err.println("Can not load server configuration file.");
 		}
 	}

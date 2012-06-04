@@ -111,7 +111,7 @@ public class Log {
 			printWriter = new PrintWriter(new BufferedWriter(new FileWriter(
 					Log.logFile)));
 			printWriter.flush();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			e.printStackTrace();
 			System.err.println("Couldn't create log file.");
 		}
@@ -127,7 +127,7 @@ public class Log {
 					+ getTime(logPattern) + " [" + logLevel.name() + "] "
 					+ text);
 			printWriter.flush();
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			System.err.println("Couldn't append to log file.");
 		}
 	}

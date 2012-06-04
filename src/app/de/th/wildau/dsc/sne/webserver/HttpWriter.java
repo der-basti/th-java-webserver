@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
 
 class HttpWriter {
 
@@ -55,7 +57,7 @@ class HttpWriter {
 		try {
 			outputStream.write(response.getBytes());
 			outputStream.flush();
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			Log.error("Can not write response / output stream! ", ex);
 		}
 	}
@@ -69,7 +71,7 @@ class HttpWriter {
 	 */
 	private String generateHeader(String body, File requestResource) {
 
-		// TODO [dsc] 
+		// TODO [dsc]
 		String header = new String();
 
 		switch (this.httpStatusCode) {
@@ -125,12 +127,58 @@ class HttpWriter {
 				// return the file (direct)
 				if (getContentType(requestResource).startsWith("image")) {
 					try {
+						
+						// XXX TEST
+						if (HttpCache.getInstance().contains(""+requestResource.hashCode())) {
+
+							byte[] buffer = new byte[1024];
+							int bytes = 0;
+							try {
+								FileInputStream fis = new FileInputStream(requestResource);
+								while ((bytes = fis.read(buffer)) != -1) {
+									outputStream.write(buffer, 0, bytes);
+								}
+							} catch (final Exception ex) {
+								Log.error("Can not read file.", ex);
+							}
+						} else {
+							// add to cache
+							List<Integer> tempList = new ArrayList<Integer>();
+							byte[] buffer = new byte[1024];
+							int bytes = 0;
+							try {
+								FileInputStream fis = new FileInputStream(requestResource);
+								while ((bytes = fis.read(buffer)) != -1) {
+									tempList.add(bytes);
+								}
+							} catch (final Exception ex) {
+								Log.error("Can not read file.", ex);
+							}
+							
+							int[] intArray = new int[tempList.size()];
+							int i = 0;
+							for (Integer e : tempList) {
+								intArray[i++] = e.intValue();
+							}
+							
+							HttpCache.getInstance().put(""+requestResource.hashCode(), intArray);							
+						}
+						// XXX TEST
+						
 						sendBytes(new FileInputStream(requestResource),
 								outputStream);
-					} catch (FileNotFoundException ex) {
+					} catch (final FileNotFoundException ex) {
 						ex.printStackTrace();
 					}
 				} else {
+					// handle script files
+					for (ScriptLanguage scriptLanguage : WebServer.supportedScriptLanguages) {
+						if (requestResource.getName().toLowerCase()
+								.endsWith(scriptLanguage.getFileExtension())) {
+							return new ScriptExecutor().execute(scriptLanguage,
+									requestResource);
+						}
+					}
 					// read the file and return it
 					BufferedReader bufferedReader = null;
 					try {
@@ -142,13 +190,13 @@ class HttpWriter {
 							body += strLine;
 						}
 						bufferedReader.close();
-					} catch (IOException ex) {
+					} catch (final IOException ex) {
 						Log.error("Can not read file.", ex);
 					} finally {
 						if (bufferedReader != null) {
 							try {
 								bufferedReader.close();
-							} catch (IOException ex) {
+							} catch (final IOException ex) {
 								Log.error(
 										"Can not close the request resource file.",
 										ex);
@@ -208,8 +256,8 @@ class HttpWriter {
 			while ((bytes = fis.read(buffer)) != -1) {
 				os.write(buffer, 0, bytes);
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (final Exception ex) {
+			Log.error("Can not read file.", ex);
 		}
 	}
 
@@ -226,9 +274,9 @@ class HttpWriter {
 				return requestResource.toURI().toURL().openConnection()
 						.getContentType();
 			}
-		} catch (MalformedURLException ex) {
+		} catch (final MalformedURLException ex) {
 			Log.warn(ex.getMessage());
-		} catch (IOException ex) {
+		} catch (final IOException ex) {
 			Log.warn(ex.getMessage());
 		}
 		// unknown content type - browser handle it
