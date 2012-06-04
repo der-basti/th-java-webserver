@@ -1,18 +1,24 @@
 package de.th.wildau.dsc.sne.webserver;
 
+<<<<<<< HEAD
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
+=======
+import java.io.File;
+import java.io.FileInputStream;
+>>>>>>> update http writer default & case 200
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
+<<<<<<< HEAD
 import java.io.PrintWriter;
+=======
+import java.io.UnsupportedEncodingException;
+>>>>>>> update http writer default & case 200
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.List;
 
 class HttpWriter {
 
@@ -54,15 +60,25 @@ class HttpWriter {
 		Log.debug("ContextType: " + getContentType(requestResource));
 
 		// generate and append the response
-		String tempBody = generateBody(outputStream, requestResource);
-		String response = generateHeader(tempBody, requestResource) + tempBody;
-
 		try {
-			outputStream.write(response.getBytes());
+			File bodyFile = generateBody(outputStream, requestResource);
+			outputStream.write(generateHeader(bodyFile.length(),
+					requestResource).getBytes());
+			outputStream.write(getByteArray(bodyFile));
 			outputStream.flush();
 		} catch (final IOException ex) {
 			Log.error("Can not write response / output stream! ", ex);
 		}
+	}
+
+	private static byte[] getByteArray(File file) throws IOException,
+			UnsupportedEncodingException {
+
+		FileInputStream fileInputStream = new FileInputStream(file);
+		byte[] data = new byte[(int) file.length()];
+		fileInputStream.read(data);
+		fileInputStream.close();
+		return new String(data, "UTF-8").getBytes();
 	}
 
 	/**
@@ -72,7 +88,7 @@ class HttpWriter {
 	 * @param requestResource
 	 * @return String http header
 	 */
-	private String generateHeader(String body, File requestResource) {
+	private String generateHeader(long bodyLength, File requestResource) {
 
 		// TODO [dsc]
 		String header = new String();
@@ -95,7 +111,7 @@ class HttpWriter {
 		case 404:
 			header += "HTTP/1.1 404 File Not Found" + getLineBreak()
 					+ "Content-Type: text/html" + getLineBreak()
-					+ "Content-Length: " + body.length();
+					+ "Content-Length: " + bodyLength;
 			break;
 		default:
 			// TODO [dsc] implement 500 Internal Server Error body
@@ -113,7 +129,7 @@ class HttpWriter {
 	 * 
 	 * @param outputStream
 	 * @param requestResource
-	 * @return http body string
+	 * @return body file
 	 */
 	private File generateBody(OutputStream outputStream, File requestResource) {
 
@@ -128,6 +144,7 @@ class HttpWriter {
 
 			if (requestResource.isFile()) {
 
+<<<<<<< HEAD
 				// return the file (direct)
 				if (getContentType(requestResource).startsWith("image")) {
 					try {
@@ -237,12 +254,131 @@ class HttpWriter {
 		case 500:
 			tempFile = new File(WebServer.class.getClassLoader().getResource("500.html").toURI());
 			return tempFile;
+=======
+				// // return the file (direct)
+				// if (getContentType(requestResource).startsWith("image")) {
+				// try {
+				//
+				// // XXX TEST
+				// if
+				// (HttpCache.getInstance().contains(""+requestResource.hashCode()))
+				// {
+				//
+				// byte[] buffer = new byte[1024];
+				// int bytes = 0;
+				// try {
+				// FileInputStream fis = new FileInputStream(requestResource);
+				// while ((bytes = fis.read(buffer)) != -1) {
+				// outputStream.write(buffer, 0, bytes);
+				// }
+				// } catch (final Exception ex) {
+				// Log.error("Can not read file.", ex);
+				// }
+				// } else {
+				// // add to cache
+				// List<Integer> tempList = new ArrayList<Integer>();
+				// byte[] buffer = new byte[1024];
+				// int bytes = 0;
+				// try {
+				// FileInputStream fis = new FileInputStream(requestResource);
+				// while ((bytes = fis.read(buffer)) != -1) {
+				// tempList.add(bytes);
+				// }
+				// } catch (final Exception ex) {
+				// Log.error("Can not read file.", ex);
+				// }
+				//
+				// int[] intArray = new int[tempList.size()];
+				// int i = 0;
+				// for (Integer e : tempList) {
+				// intArray[i++] = e.intValue();
+				// }
+				//
+				// HttpCache.getInstance().put(""+requestResource.hashCode(),
+				// intArray);
+				// }
+				// // XXX TEST
+				//
+				// sendBytes(new FileInputStream(requestResource),
+				// outputStream);
+				// } catch (final FileNotFoundException ex) {
+				// ex.printStackTrace();
+				// }
+				// } else {
+				// // handle script files
+				// for (ScriptLanguage scriptLanguage :
+				// WebServer.supportedScriptLanguages) {
+				// if (requestResource.getName().toLowerCase()
+				// .endsWith(scriptLanguage.getFileExtension())) {
+				// return new ScriptExecutor().execute(scriptLanguage,
+				// requestResource);
+				// }
+				// }
+				// // read the file and return it
+				// BufferedReader bufferedReader = null;
+				// try {
+				// bufferedReader = new BufferedReader(
+				// new InputStreamReader(new FileInputStream(
+				// requestResource)));
+				// String strLine;
+				// while ((strLine = bufferedReader.readLine()) != null) {
+				// body += strLine;
+				// }
+				// bufferedReader.close();
+				// } catch (final IOException ex) {
+				// Log.error("Can not read file.", ex);
+				// } finally {
+				// if (bufferedReader != null) {
+				// try {
+				// bufferedReader.close();
+				// } catch (final IOException ex) {
+				// Log.error(
+				// "Can not close the request resource file.",
+				// ex);
+				// }
+				// }
+				// }
+				// }
+				return requestResource;
+			} else if (requestResource.isDirectory()) {
+				// body += "<html><body><ul>";
+				// for (File file : requestResource
+				// .listFiles(new HiddenFileFilter())) {
+				// // FIXME [dsc] [sne] case sub directories
+				// body += "<li><a href=\"" + file.getName() + "\">"
+				// + file.getName() + "</a></li>";
+				// }
+				// body += "</ul></body></html>";
+			}
+			break;
+		case 403:
+			// TODO [dsc] implement 403 forbidden body
+			/*
+			 * <html><body>Forbidden<br /> You don't have permission to access
+			 * /foo/bar/ on this server.</body></html>
+			 */
+			break;
+		case 500:
+			// body += "<html><body>";
+			// body += "<h1>500 Internal Server Error</h1>";
+			// body += "</body></html>";
+			break;
+		case 404:
+			// body += "<html><body>";
+			// body += "<h1>Error 404</h1><h2>File Not Found.</h2>";
+			// body += "</body></html>";
+>>>>>>> update http writer default & case 200
 			break;
 		default:
 			throw new IllegalStateException("Invalid http status code.");
 		}
+<<<<<<< HEAD
 		tempFilePrintWriter.flush();
 		return tempFile;
+=======
+
+		return null;
+>>>>>>> update http writer default & case 200
 	}
 	
 	
