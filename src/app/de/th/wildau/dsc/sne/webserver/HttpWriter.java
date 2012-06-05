@@ -59,11 +59,14 @@ class HttpWriter {
 			byte[] byteArray = getByteArray(bodyFile);
 			Log.debug("file length: " + bodyFile.length());
 			Log.debug("byte[] length: " + byteArray.length);
-			// XXX [sne] check length
+			// FIXME [sne] incorrect length of script file body's
 			long size = byteArray.length > bodyFile.length() ? byteArray.length
 					: bodyFile.length();
+			String header = generateHeader(size, requestResource);
+			Log.debug("header... " + header);
 			outputStream
-					.write(generateHeader(size, requestResource).getBytes());
+					.write(header.getBytes());
+			Log.debug("body... " + new String(byteArray));
 			outputStream.write(byteArray);
 			outputStream.flush();
 		} catch (final IOException ex) {
@@ -84,35 +87,35 @@ class HttpWriter {
 					.getBytes();
 		}
 
-		if (getContentType(file).startsWith("text")) {
-			FileInputStream fileInputStream = new FileInputStream(file);
-			byte[] data = new byte[(int) file.length()];
-			fileInputStream.read(data);
-			fileInputStream.close();
-			return new String(data, ENCODING).getBytes();
-		} else {
-			// FIXME [sne] return images
-			// XXX image case
-			FileInputStream fis = new FileInputStream(file);
-			byte[] byteArray = new byte[(int) file.length()];
-			fis.read(byteArray);
-			fis.close();
-			return new String(byteArray, ENCODING).getBytes();
-			
-//			FileInputStream fis = new FileInputStream(file);
-//			byte[] buffer = new byte[1024];
-//			int bytes = 0;
-//			long result = 0;
-//			try {
-//				// copy requested file into the socket's output stream.
-//				while ((bytes = fis.read(buffer)) != -1) {
-//					//os.write(buffer, 0, bytes);
-//					result += buffer.length;
-//				}
-//			} catch (final Exception ex) {
-//				Log.error("Can not read file.", ex);
-//			}
-		}
+		byte[] data;
+		FileInputStream fileInputStream = new FileInputStream(file);
+
+		// if (getContentType(file).startsWith("text")) {
+		data = new byte[(int) file.length()];
+		fileInputStream.read(data);
+		fileInputStream.close();
+		return new String(data, ENCODING).getBytes();
+		// } else {
+		// // FIXME [sne] return images
+		// data = new byte[(int) file.length()];
+		// byte[] buffer = new byte[1024];
+		// int bytes = 0;
+		// int index = 0;
+		// try {
+		// while ((bytes = fileInputStream.read(buffer)) != -1) {
+		// // os.write(buffer, 0, bytes);
+		// // dataList.addAll(Collections.buffer));
+		// for (int i = 0; i < bytes; i++) {
+		// data[index] = buffer[i];
+		// index++;
+		// }
+		//
+		// }
+		// } catch (final Exception ex) {
+		// Log.error("Can not read file.", ex);
+		// }
+		// }
+		// return data;
 	}
 
 	private ScriptLanguage isInterpretedFile(File file) {
