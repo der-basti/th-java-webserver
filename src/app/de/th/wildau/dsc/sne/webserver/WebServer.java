@@ -50,8 +50,10 @@ public class WebServer {
 
 		Log.info("instantiating web server");
 		try {
-			ServerSocket server = new ServerSocket(Configuration.getPort());
-			Log.debug("bound port " + Configuration.getPort());
+			ServerSocket server = new ServerSocket(Configuration
+					.getConfig().getServerPort());
+			Log.debug("bound port "
+					+ Configuration.getConfig().getServerPort());
 
 			int corePoolSize = Runtime.getRuntime().availableProcessors();
 			int maxPoolSize = (2 * corePoolSize) + 1;
@@ -121,6 +123,13 @@ public class WebServer {
 			Log.createInstance();
 			Log.info("loaded server configuration");
 			Log.debug(Configuration.getInstance().toString());
+
+			if (Configuration.getConfig().getProxyHost() != null) {
+				System.setProperty("http.proxyHost", Configuration
+						.getConfig().getProxyHost());
+				System.setProperty("http.proxyPort", String
+						.valueOf(Configuration.getConfig().getProxyPort()));
+			}
 		} catch (final Exception ex) {
 			System.err.println("Can not load server configuration file.");
 		}

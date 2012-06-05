@@ -1,7 +1,9 @@
 package de.th.wildau.dsc.sne.webserver;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -18,7 +20,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "server-node")
-public class ConfigurationFile {
+public class ConfigurationFile implements Cloneable {
 
 	@XmlElement(name = "server-name", required = true)
 	private String serverName;
@@ -30,12 +32,32 @@ public class ConfigurationFile {
 	private String logRoot;
 	@XmlElement(name = "log-level", required = true)
 	private String logLevel;
+	@XmlElement(name = "proxy-host", required = false)
+	private String proxyHost;
+	@XmlElement(name = "proxy-port", required = false)
+	private int proxyPort;
 	// XXX proxy config
 	// XXX http status pages
 	// XXX gzip
 	@XmlElementWrapper(name = "directory-index", required = false)
 	@XmlElement(name = "item")
 	private List<String> directoryIndex = new ArrayList<String>();
+
+	@Override
+	protected ConfigurationFile clone() {
+
+		ConfigurationFile configurationFile = new ConfigurationFile();
+		configurationFile.setWebRoot(this.webRoot);
+		configurationFile.setServerPort(this.serverPort);
+		configurationFile.setServerName(this.serverName);
+		configurationFile.setProxyPort(this.proxyPort);
+		configurationFile.setProxyHost(this.proxyHost);
+		configurationFile.setLogRoot(this.logRoot);
+		configurationFile.setLogLevel(this.logLevel);
+		configurationFile.setDirectoryIndex(Collections
+				.unmodifiableList(this.directoryIndex));
+		return configurationFile;
+	}
 
 	@Override
 	public String toString() {
@@ -46,6 +68,8 @@ public class ConfigurationFile {
 		sb.append(" web-root:").append(this.webRoot);
 		sb.append(" log-root:").append(this.logRoot);
 		sb.append(" log-level:").append(this.logLevel);
+		sb.append(" proxy-host:").append(this.proxyHost);
+		sb.append(" proxy-port:").append(this.proxyPort);
 		sb.append(" directory-index:").append(
 				Arrays.toString(this.directoryIndex.toArray()));
 		return sb.append("]").toString();
@@ -71,12 +95,20 @@ public class ConfigurationFile {
 		return this.webRoot;
 	}
 
+	public File getWebRootFile() {
+		return new File(this.webRoot);
+	}
+
 	public void setWebRoot(String webRoot) {
 		this.webRoot = webRoot;
 	}
 
 	public String getLogRoot() {
 		return this.logRoot;
+	}
+
+	public File getLogRootFile() {
+		return new File(this.logRoot);
 	}
 
 	public void setLogRoot(String logRoot) {
@@ -87,8 +119,28 @@ public class ConfigurationFile {
 		return this.logLevel;
 	}
 
+	public LogLevel getLogLevelEnum() {
+		return LogLevel.valueOf(this.logLevel.toUpperCase());
+	}
+
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
+	}
+
+	public final String getProxyHost() {
+		return proxyHost;
+	}
+
+	public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+	public int getProxyPort() {
+		return proxyPort;
+	}
+
+	public void setProxyPort(int proxyPort) {
+		this.proxyPort = proxyPort;
 	}
 
 	public List<String> getDirectoryIndex() {

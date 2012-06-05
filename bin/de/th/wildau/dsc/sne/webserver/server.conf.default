@@ -2,9 +2,11 @@
 <servernode>
 	<server-name>WebServer by dsc and sne</server-name>
 	<server-port>1337</server-port>
-	<web-root>/absolut/path</web-root>
-	<log-root>/absolut/path</log-root>
+	<web-root>/</web-root>
+	<log-root>/</log-root>
 	<log-level>info</log-level>
+	<proxy-host>proxy.th-wildau.de</proxy-host>
+	<proxy-port>8080</proxy-port>
 	<directory-index>
 		<item>index.html</item>
 		<item>index.htm</item>

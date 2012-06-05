@@ -34,7 +34,7 @@ class HttpWriter {
 	 */
 	protected void write(OutputStream outputStream, File requestResource) {
 
-		Log.debug("Method... HttpWriter.write()");
+		Log.debug("method... HttpWriter.write()");
 
 		switch (this.httpStatusCode) {
 		case 200:
@@ -76,7 +76,7 @@ class HttpWriter {
 	private byte[] getByteArray(File file) throws IOException,
 			UnsupportedEncodingException {
 
-		Log.debug("Method... HttpWriter.getByteArray()");
+		Log.debug("method... HttpWriter.getByteArray()");
 
 		ScriptLanguage scriptLanguage;
 		if ((scriptLanguage = isInterpretedFile(file)) != null) {
@@ -91,12 +91,27 @@ class HttpWriter {
 			fileInputStream.close();
 			return new String(data, ENCODING).getBytes();
 		} else {
+			// FIXME [sne] return images
 			// XXX image case
 			FileInputStream fis = new FileInputStream(file);
 			byte[] byteArray = new byte[(int) file.length()];
 			fis.read(byteArray);
 			fis.close();
 			return new String(byteArray, ENCODING).getBytes();
+			
+//			FileInputStream fis = new FileInputStream(file);
+//			byte[] buffer = new byte[1024];
+//			int bytes = 0;
+//			long result = 0;
+//			try {
+//				// copy requested file into the socket's output stream.
+//				while ((bytes = fis.read(buffer)) != -1) {
+//					//os.write(buffer, 0, bytes);
+//					result += buffer.length;
+//				}
+//			} catch (final Exception ex) {
+//				Log.error("Can not read file.", ex);
+//			}
 		}
 	}
 
@@ -120,7 +135,7 @@ class HttpWriter {
 	 */
 	private String generateHeader(long bodyLength, File requestResource) {
 
-		Log.debug("Method... HttpWriter.generateHeader()");
+		Log.debug("method... HttpWriter.generateHeader()");
 
 		// TODO [dsc]
 		String header = new String("HTTP/1.1 ");
@@ -175,7 +190,7 @@ class HttpWriter {
 	private File generateBody(OutputStream outputStream, File requestResource)
 			throws IOException, URISyntaxException {
 
-		Log.debug("Method... HttpWriter.generateBody()");
+		Log.debug("method... HttpWriter.generateBody()");
 		File tempFile = null;
 
 		switch (this.httpStatusCode) {
@@ -306,21 +321,24 @@ class HttpWriter {
 	}
 
 	@Deprecated
-	private void sendBytes(FileInputStream fis, OutputStream os) {
+	private long sendBytes(FileInputStream fis, OutputStream os) {
 
-		Log.debug("Method... HttpWriter.sendBytes()");
+		Log.debug("method... HttpWriter.sendBytes()");
 
 		byte[] buffer = new byte[1024];
 		int bytes = 0;
+		long result = 0;
 
 		try {
 			// copy requested file into the socket's output stream.
 			while ((bytes = fis.read(buffer)) != -1) {
 				os.write(buffer, 0, bytes);
+				result += buffer.length;
 			}
 		} catch (final Exception ex) {
 			Log.error("Can not read file.", ex);
 		}
+		return result;
 	}
 
 	/**
@@ -331,7 +349,7 @@ class HttpWriter {
 	 */
 	private String getContentType(File requestResource) {
 
-		Log.debug("Method... HttpWriter.getContentType()");
+		Log.debug("method... HttpWriter.getContentType()");
 
 		try {
 			if (requestResource.isFile()) {

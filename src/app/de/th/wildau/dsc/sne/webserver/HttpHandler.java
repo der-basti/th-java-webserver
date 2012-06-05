@@ -33,7 +33,7 @@ class HttpHandler implements Runnable {
 	@Override
 	public void run() {
 
-		Log.debug("Method... HttpHandler.run()");
+		Log.debug("method... HttpHandler.run()");
 
 		if (this.socket == null) {
 			throw new IllegalStateException("Missing server socket.");
@@ -51,7 +51,7 @@ class HttpHandler implements Runnable {
 
 	private void processRequest(InputStream input, OutputStream output) {
 
-		Log.debug("Method... HttpHandler.processRequest()");
+		Log.debug("method... HttpHandler.processRequest()");
 
 		try {
 			BufferedReader bufferedReader = new BufferedReader(
@@ -65,8 +65,8 @@ class HttpHandler implements Runnable {
 						+ line);
 				// support GET ... HTTP 1.0 & 1.1 requests
 				if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", line)) {
-					requestResource = new File(Configuration.getWebRoot()
-							+ line.split(" ")[1]);
+					requestResource = new File(Configuration.getConfig()
+							.getWebRoot() + line.split(" ")[1]);
 				} else if (Pattern.matches("^POST /*.*", line)) {
 					Log.warn("Doesn't support POST requests!");
 					// TODO return error
@@ -131,7 +131,7 @@ class HttpHandler implements Runnable {
 	 */
 	private void closeConnection() {
 
-		Log.debug("Method... HttpHandler.closeConnection()");
+		Log.debug("method... HttpHandler.closeConnection()");
 
 		try {
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(),

@@ -44,8 +44,8 @@ public class Log {
 	 * Static method, which returns only one instance of this class.
 	 */
 	public static void createInstance() {
-		new Log(new GregorianCalendar(), Configuration.getLogRoot(),
-				Configuration.getLogLevel());
+		new Log(new GregorianCalendar(), Configuration.getConfig()
+				.getLogRootFile(), Configuration.getConfig().getLogLevelEnum());
 	}
 
 	/**
