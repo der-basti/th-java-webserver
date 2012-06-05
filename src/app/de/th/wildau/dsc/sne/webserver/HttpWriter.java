@@ -87,6 +87,7 @@ class HttpWriter {
 					.getBytes();
 		}
 
+<<<<<<< HEAD
 		byte[] data;
 		FileInputStream fileInputStream = new FileInputStream(file);
 
@@ -116,6 +117,37 @@ class HttpWriter {
 		// }
 		// }
 		// return data;
+=======
+		if (getContentType(file).startsWith("text")) {
+			FileInputStream fileInputStream = new FileInputStream(file);
+			byte[] data = new byte[(int) file.length()];
+			fileInputStream.read(data);
+			fileInputStream.close();
+			return new String(data, ENCODING).getBytes();
+		} else {
+			// FIXME [sne] return images
+			// XXX image case
+			FileInputStream fis = new FileInputStream(file);
+			byte[] byteArray = new byte[(int) file.length()];
+			fis.read(byteArray);
+			fis.close();
+			return new String(byteArray, ENCODING).getBytes();
+
+			// FileInputStream fis = new FileInputStream(file);
+			// byte[] buffer = new byte[1024];
+			// int bytes = 0;
+			// long result = 0;
+			// try {
+			// // copy requested file into the socket's output stream.
+			// while ((bytes = fis.read(buffer)) != -1) {
+			// //os.write(buffer, 0, bytes);
+			// result += buffer.length;
+			// }
+			// } catch (final Exception ex) {
+			// Log.error("Can not read file.", ex);
+			// }
+		}
+>>>>>>> branch 'master' of https://github.com/der-basti/th-java-webserver.git
 	}
 
 	private ScriptLanguage isInterpretedFile(File file) {
@@ -152,21 +184,22 @@ class HttpWriter {
 			} else {
 				header += "Content-Type: text/html" + getLineBreak();
 			}
-			header += "Content-Length: " + requestResource.length()
-					+ getLineBreak();
 			break;
 		case 403:
-			// TODO [dsc] implement 403 forbidden header
+			header += "403 Forbidden" + getLineBreak()
+					+ "Content-Type: text/html" + getLineBreak();
 			break;
 		case 404:
 			header += "404 File Not Found" + getLineBreak()
-					+ "Content-Type: text/html" + getLineBreak()
-					+ "Content-Length: " + bodyLength;
+					+ "Content-Type: text/html" + getLineBreak();
 			break;
 		default:
-			// TODO [dsc] implement 500 Internal Server Error body
+			header += "500 Internal Server Error" + getLineBreak()
+					+ "Content-Type: text/html" + getLineBreak();
+					
 			break;
 		}
+		header += "Content-Length: " + bodyLength;
 
 		// add empty line
 		header += getLineBreak() + getLineBreak();
@@ -290,15 +323,21 @@ class HttpWriter {
 			} else if (requestResource.isDirectory()
 					&& requestResource.canRead()) {
 
-				tempFile = File.createTempFile("directorylisting", "html");
+				tempFile = File.createTempFile("directorylisting", ".html");
 				tempFile.deleteOnExit();
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
 				tempFilePrintWriter.print("<html><body><ul>");
 				for (File file : requestResource.listFiles(new HiddenFilter())) {
-					// FIXME [dsc] [sne] case sub directories
-					tempFilePrintWriter.print("<li><a href=\"" + file.getName()
-							+ "\">" + file.getName() + "</a></li>");
+					if (file.isDirectory()) {
+						tempFilePrintWriter.print("<li><a href=\""
+								+ file.getName() + "/\">" + file.getName()
+								+ "</a></li>");
+					} else if (file.isFile()) {
+						tempFilePrintWriter.print("<li><a href=\""
+								+ file.getName() + "\">" + file.getName()
+								+ "</a></li>");
+					}
 				}
 				tempFilePrintWriter.print("</ul></body></html>");
 				tempFilePrintWriter.flush();
