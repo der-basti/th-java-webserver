@@ -32,12 +32,12 @@ Betriebssysteme - Belegarbeit
 =============================================================================
 ==== 1. MUST HAVE (FEATURES)
 =============================================================================
-- Bei jedem Request wird geprüft ob das gewünschte Dokument im Verzeichnis 
+- Bei jedem Request wird geprüft ob das gewünschte Dokument im Verzeichnis 
   DocDir existiert
 - Im Verzeichnis LogDir wird jede Aktion in einer LogDatei vermerkt
 - Log Informationen: Datum/Zeit, Dokument URL, Nachfrage URL, Status Code
 - Jeden Tag ist eine neue Log Datei anzulegen
-- Einträge in die Log Datei in synchronisierter Form
+- Einträge in die Log Datei in synchronisierter Form
 - Pfad von LogDir und DocDir ist in dem Server als Konstante festzulegen
 -! Dokumentation:
 	• Aufgabenstellung:
@@ -47,7 +47,7 @@ Betriebssysteme - Belegarbeit
 	• Nutzerhandbuch:
 	• Administratorhandbuch: Alles was ein Administrator zum Betrieb der 
 	  Anwendung wissen muss.
--! Web Server muss auf der Turku lauffähig sein
+-! Web Server muss auf der Turku lauffähig sein
 -! Es ist ein Ordner mit der ausgedruckten Dokumentation und eine CD mit der 
    Dokumentation und dem Quellcode abzugeben.
 
@@ -83,18 +83,18 @@ See JavaDoc!
      $$$$$$$$$$$$$$$              $$$$$$$$$               $$$$$$$$$$$$$$$
     o$$$$$$$$$$$$$$$.             o$$$$$$$o              .$$$$$$$$$$$$$$$o
     $$$$$$$$$$$$$$$$$.           o{$$$$$$$}o            .$$$$$$$$$$$$$$$$$
-   ^$$$$$$$$$$$$$$$$$$.         J$$$$$$$$$$$L          .$$$$$$$$$$$$$$$$$$^
+   *$$$$$$$$$$$$$$$$$$.         J$$$$$$$$$$$L          .$$$$$$$$$$$$$$$$$$*
    !$$$$$$$$$$$$$$$$$$$$oo..oo$$$$$$$$$$$$$$$$$oo..oo$$$$$$$$$$$$$$$$$$$$$!
    {$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$}
    6$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$?
    '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
     o$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$o
-     $$$$$$$$$$$$$$;'~`^Y$$$7^''o$$$$$$$$$$$o''^Y$$$7^`~';$$$$$$$$$$$$$$$
+     $$$$$$$$$$$$$$;'~`*Y$$$7*''o$$$$$$$$$$$o''*Y$$$7*`~';$$$$$$$$$$$$$$$
      '$$$$$$$$$$$'       `$'    `'$$$$$$$$$'     `$'       '$$$$$$$$$$$$'
       !$$$$$$$$$7         !       '$$$$$$$'       !         V$$$$$$$$$!
-       ^o$$$$$$!                   '$$$$$'                   !$$$$$$o^
-         ^$$$$$"                    $$$$$                    "$$$$$^
-           'o$$$`                   ^$$$'                   '$$$o'
+       *o$$$$$$!                   '$$$$$'                   !$$$$$$o*
+         *$$$$$"                    $$$$$                    "$$$$$*
+           'o$$$`                   *$$$'                   '$$$o'
              ~$$$.                   $$$.                  .$$$~
                '$;.                  `$'                  .;$'
                   '.                  !                  .`
