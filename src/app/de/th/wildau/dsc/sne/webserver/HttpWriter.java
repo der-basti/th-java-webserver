@@ -97,7 +97,7 @@ class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which generate the http header.
+	 * Internal help method which generates the http header.
 	 * 
 	 * @param body
 	 * @param requestResource
@@ -150,7 +150,7 @@ class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which generate the http body.
+	 * Internal help method which generates the http body.
 	 * 
 	 * @param outputStream
 	 * @param requestResource
@@ -259,9 +259,19 @@ class HttpWriter {
 
 				tempFile = File.createTempFile("directorylisting", ".html");
 				tempFile.deleteOnExit();
+				
+//				for (File file : requestResource.listFiles())
+//				Configuration.getConfig().getDirectoryIndex().contains("")
+//				getByteArray(file)
+				
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
-				tempFilePrintWriter.print("<html><body><ul>");
+				String style = "<style>ul li:nth-child(2n) {background-color:#E6E6E6;} " +
+						"li {list-style:none;}" +
+						"a:visited {color:#0000FF;}</style>";
+						
+				
+				tempFilePrintWriter.print("<html><head>" + style +  "</head><body><ul>");
 				for (File file : requestResource.listFiles(new HiddenFilter())) {
 					if (file.isDirectory()) {
 						tempFilePrintWriter.print("<li><a href=\""
@@ -297,7 +307,7 @@ class HttpWriter {
 	}
 
 	/**
-	 * Help method, which find the content type of the request resource file.
+	 * Help method which finds the content type of the request resource file.
 	 * 
 	 * @param requestResource
 	 * @return content type
