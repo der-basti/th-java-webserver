@@ -59,14 +59,11 @@ class HttpWriter {
 			byte[] byteArray = getByteArray(bodyFile);
 			Log.debug("file length: " + bodyFile.length());
 			Log.debug("byte[] length: " + byteArray.length);
-			// FIXME [sne] incorrect length of script file body's
+			// XXX [sne] check length
 			long size = byteArray.length > bodyFile.length() ? byteArray.length
 					: bodyFile.length();
-			String header = generateHeader(size, requestResource);
-			Log.debug("header... " + header);
 			outputStream
-					.write(header.getBytes());
-			Log.debug("body... " + new String(byteArray));
+					.write(generateHeader(size, requestResource).getBytes());
 			outputStream.write(byteArray);
 			outputStream.flush();
 		} catch (final IOException ex) {
@@ -87,37 +84,6 @@ class HttpWriter {
 					.getBytes();
 		}
 
-<<<<<<< HEAD
-		byte[] data;
-		FileInputStream fileInputStream = new FileInputStream(file);
-
-		// if (getContentType(file).startsWith("text")) {
-		data = new byte[(int) file.length()];
-		fileInputStream.read(data);
-		fileInputStream.close();
-		return new String(data, ENCODING).getBytes();
-		// } else {
-		// // FIXME [sne] return images
-		// data = new byte[(int) file.length()];
-		// byte[] buffer = new byte[1024];
-		// int bytes = 0;
-		// int index = 0;
-		// try {
-		// while ((bytes = fileInputStream.read(buffer)) != -1) {
-		// // os.write(buffer, 0, bytes);
-		// // dataList.addAll(Collections.buffer));
-		// for (int i = 0; i < bytes; i++) {
-		// data[index] = buffer[i];
-		// index++;
-		// }
-		//
-		// }
-		// } catch (final Exception ex) {
-		// Log.error("Can not read file.", ex);
-		// }
-		// }
-		// return data;
-=======
 		if (getContentType(file).startsWith("text")) {
 			FileInputStream fileInputStream = new FileInputStream(file);
 			byte[] data = new byte[(int) file.length()];
@@ -147,7 +113,6 @@ class HttpWriter {
 			// Log.error("Can not read file.", ex);
 			// }
 		}
->>>>>>> branch 'master' of https://github.com/der-basti/th-java-webserver.git
 	}
 
 	private ScriptLanguage isInterpretedFile(File file) {
