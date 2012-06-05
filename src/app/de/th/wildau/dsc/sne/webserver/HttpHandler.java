@@ -33,6 +33,8 @@ class HttpHandler implements Runnable {
 	@Override
 	public void run() {
 
+		Log.debug("Method... HttpHandler.run()");
+
 		if (this.socket == null) {
 			throw new IllegalStateException("Missing server socket.");
 		}
@@ -48,6 +50,8 @@ class HttpHandler implements Runnable {
 	}
 
 	private void processRequest(InputStream input, OutputStream output) {
+
+		Log.debug("Method... HttpHandler.processRequest()");
 
 		try {
 			BufferedReader bufferedReader = new BufferedReader(
@@ -126,6 +130,8 @@ class HttpHandler implements Runnable {
 	 * Close the current client connection.
 	 */
 	private void closeConnection() {
+
+		Log.debug("Method... HttpHandler.closeConnection()");
 
 		try {
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(),

@@ -15,6 +15,7 @@ public enum ScriptLanguage {
 
 	private ScriptLanguage(String executeCommand, String fileExtension) {
 		this.executeComand = executeCommand;
+		this.fileExtension = fileExtension;
 	}
 
 	@Override

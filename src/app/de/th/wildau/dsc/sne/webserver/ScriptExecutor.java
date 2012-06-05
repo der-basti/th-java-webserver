@@ -97,7 +97,6 @@ public class ScriptExecutor {
 			process = Runtime.getRuntime().exec(command);
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					process.getInputStream()));
-			// PrintStream out = new PrintStream(process.getOutputStream());
 			StringBuilder sb = new StringBuilder();
 			String line;
 			while ((line = in.readLine()) != null) {
