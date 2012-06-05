@@ -13,7 +13,6 @@ import java.net.URISyntaxException;
 
 class HttpWriter {
 
-	private final String ENCODING = "UTF-8";
 	private final int httpStatusCode;
 
 	/**
@@ -33,8 +32,6 @@ class HttpWriter {
 	 * @param requestResource
 	 */
 	protected void write(OutputStream outputStream, File requestResource) {
-
-		Log.debug("method... HttpWriter.write()");
 
 		switch (this.httpStatusCode) {
 		case 200:
@@ -65,7 +62,6 @@ class HttpWriter {
 			outputStream
 					.write(generateHeader(size, requestResource).getBytes());
 			outputStream.write(byteArray);
-			outputStream.flush();
 		} catch (final IOException ex) {
 			Log.error("Can not write response / output stream! ", ex);
 		} catch (URISyntaxException e) {
@@ -76,43 +72,17 @@ class HttpWriter {
 	private byte[] getByteArray(File file) throws IOException,
 			UnsupportedEncodingException {
 
-		Log.debug("method... HttpWriter.getByteArray()");
-
 		ScriptLanguage scriptLanguage;
 		if ((scriptLanguage = isInterpretedFile(file)) != null) {
 			return new ScriptExecutor().execute(scriptLanguage, file)
 					.getBytes();
 		}
 
-		if (getContentType(file).startsWith("text")) {
-			FileInputStream fileInputStream = new FileInputStream(file);
-			byte[] data = new byte[(int) file.length()];
-			fileInputStream.read(data);
-			fileInputStream.close();
-			return new String(data, ENCODING).getBytes();
-		} else {
-			// FIXME [sne] return images
-			// XXX image case
-			FileInputStream fis = new FileInputStream(file);
-			byte[] byteArray = new byte[(int) file.length()];
-			fis.read(byteArray);
-			fis.close();
-			return new String(byteArray, ENCODING).getBytes();
-
-			// FileInputStream fis = new FileInputStream(file);
-			// byte[] buffer = new byte[1024];
-			// int bytes = 0;
-			// long result = 0;
-			// try {
-			// // copy requested file into the socket's output stream.
-			// while ((bytes = fis.read(buffer)) != -1) {
-			// //os.write(buffer, 0, bytes);
-			// result += buffer.length;
-			// }
-			// } catch (final Exception ex) {
-			// Log.error("Can not read file.", ex);
-			// }
-		}
+		FileInputStream fis = new FileInputStream(file);
+		byte[] data = new byte[(int) file.length()];
+		fis.read(data);
+		fis.close();
+		return data;
 	}
 
 	private ScriptLanguage isInterpretedFile(File file) {
@@ -161,7 +131,7 @@ class HttpWriter {
 		default:
 			header += "500 Internal Server Error" + getLineBreak()
 					+ "Content-Type: text/html" + getLineBreak();
-					
+
 			break;
 		}
 		header += "Content-Length: " + bodyLength;
@@ -191,7 +161,6 @@ class HttpWriter {
 	private File generateBody(OutputStream outputStream, File requestResource)
 			throws IOException, URISyntaxException {
 
-		Log.debug("method... HttpWriter.generateBody()");
 		File tempFile = null;
 
 		switch (this.httpStatusCode) {
@@ -325,27 +294,6 @@ class HttpWriter {
 			throw new IllegalStateException("Invalid http status code.");
 		}
 		return tempFile;
-	}
-
-	@Deprecated
-	private long sendBytes(FileInputStream fis, OutputStream os) {
-
-		Log.debug("method... HttpWriter.sendBytes()");
-
-		byte[] buffer = new byte[1024];
-		int bytes = 0;
-		long result = 0;
-
-		try {
-			// copy requested file into the socket's output stream.
-			while ((bytes = fis.read(buffer)) != -1) {
-				os.write(buffer, 0, bytes);
-				result += buffer.length;
-			}
-		} catch (final Exception ex) {
-			Log.error("Can not read file.", ex);
-		}
-		return result;
 	}
 
 	/**
