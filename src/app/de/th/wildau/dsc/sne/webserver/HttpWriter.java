@@ -13,6 +13,8 @@ import java.net.URISyntaxException;
 
 class HttpWriter {
 
+	private static final String LINE_BREAK = "\r\n";
+
 	private final int httpStatusCode;
 
 	/**
@@ -52,21 +54,31 @@ class HttpWriter {
 
 		// generate and append the response
 		try {
+			if (HttpCache.getInstance().contains(requestResource)) {
+
+			}
+
 			File bodyFile = generateBody(outputStream, requestResource);
-			byte[] byteArray = getByteArray(bodyFile);
-			Log.debug("file length: " + bodyFile.length());
-			Log.debug("byte[] length: " + byteArray.length);
+			byte[] body = getByteArray(bodyFile);
+
 			// XXX [sne] check length
-			long size = byteArray.length > bodyFile.length() ? byteArray.length
+			long size = body.length > bodyFile.length() ? body.length
 					: bodyFile.length();
-			outputStream
-					.write(generateHeader(size, requestResource).getBytes());
-			outputStream.write(byteArray);
+
+			String header = generateHeader(size, requestResource);
+			outputStream.write(getByteArray(header));
+			outputStream.write(body);
 		} catch (final IOException ex) {
 			Log.error("Can not write response / output stream! ", ex);
 		} catch (URISyntaxException e) {
 			Log.error("Can't read resource from JAR file.", e);
 		}
+	}
+
+	private byte[] getByteArray(String string)
+			throws UnsupportedEncodingException {
+
+		return new String(string.getBytes(), "UTF-8").getBytes();
 	}
 
 	private byte[] getByteArray(File file) throws IOException,
@@ -115,22 +127,23 @@ class HttpWriter {
 			header += "200 OK" + getLineBreak();
 			if (!requestResource.isDirectory()) {
 				header += "Content-Type: " + getContentType(requestResource)
-						+ getLineBreak();
+						+ "; charset=utf-8" + getLineBreak();
 			} else {
-				header += "Content-Type: text/html" + getLineBreak();
+				header += "Content-Type: text/html; charset=utf-8"
+						+ getLineBreak();
 			}
 			break;
 		case 403:
 			header += "403 Forbidden" + getLineBreak()
-					+ "Content-Type: text/html" + getLineBreak();
+					+ "Content-Type: text/html; charset=utf-8" + getLineBreak();
 			break;
 		case 404:
 			header += "404 File Not Found" + getLineBreak()
-					+ "Content-Type: text/html" + getLineBreak();
+					+ "Content-Type: text/html; charset=utf-8" + getLineBreak();
 			break;
 		default:
 			header += "500 Internal Server Error" + getLineBreak()
-					+ "Content-Type: text/html" + getLineBreak();
+					+ "Content-Type: text/html; charset=utf-8" + getLineBreak();
 
 			break;
 		}
@@ -142,6 +155,12 @@ class HttpWriter {
 		return header;
 	}
 
+	/**
+	 * Please use {@link #LINE_BREAK}
+	 * 
+	 * @return
+	 */
+	@Deprecated
 	private String getLineBreak() {
 
 		// XXX [dsc] check win, lin, mac default line separator
@@ -259,19 +278,19 @@ class HttpWriter {
 
 				tempFile = File.createTempFile("directorylisting", ".html");
 				tempFile.deleteOnExit();
-				
-//				for (File file : requestResource.listFiles())
-//				Configuration.getConfig().getDirectoryIndex().contains("")
-//				getByteArray(file)
-				
+
+				// for (File file : requestResource.listFiles())
+				// Configuration.getConfig().getDirectoryIndex().contains("")
+				// getByteArray(file)
+
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
-				String style = "<style>ul li:nth-child(2n) {background-color:#E6E6E6;} " +
-						"li {list-style:none;}" +
-						"a:visited {color:#0000FF;}</style>";
-						
-				
-				tempFilePrintWriter.print("<html><head>" + style +  "</head><body><ul>");
+				String style = "<style>ul li:nth-child(2n) {background-color:#E6E6E6;} "
+						+ "li {list-style:none;}"
+						+ "a:visited {color:#0000FF;}</style>";
+
+				tempFilePrintWriter.print("<html><head>" + style
+						+ "</head><body><ul>");
 				for (File file : requestResource.listFiles(new HiddenFilter())) {
 					if (file.isDirectory()) {
 						tempFilePrintWriter.print("<li><a href=\""
