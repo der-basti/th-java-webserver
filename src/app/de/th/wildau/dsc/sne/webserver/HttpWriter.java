@@ -285,12 +285,26 @@ class HttpWriter {
 
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
-				String style = "<style>ul li:nth-child(2n) {background-color:#E6E6E6;} "
+				String style = "<style>"
+						+ "ul li:nth-child(2n) {background-color:#E6E6E6;} "
 						+ "li {list-style:none;}"
-						+ "a:visited {color:#0000FF;}</style>";
+						+ "a:visited {color:#0000FF;}"
+						+ "body {margin:0; padding-top:15px;}" + "</style>";
 
 				tempFilePrintWriter.print("<html><head>" + style
 						+ "</head><body><ul>");
+				// show directory info
+				tempFilePrintWriter.print("<h1>Directory: "
+						+ requestResource.toString().replaceFirst(
+								Configuration.getConfig().getWebRoot(), "")
+						+ "</h1>");
+				// add parent link
+				if (!Configuration.getConfig().getWebRoot()
+						.startsWith(requestResource.getAbsolutePath())) {
+					tempFilePrintWriter
+							.print("<li><a href=\"..\">/..</a></li>");
+				}
+				// file listing
 				for (File file : requestResource.listFiles(new HiddenFilter())) {
 					if (file.isDirectory()) {
 						tempFilePrintWriter.print("<li><a href=\""
