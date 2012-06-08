@@ -11,6 +11,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
+/**
+ * 
+ * @author sne and dsc
+ */
+
 class HttpWriter {
 
 	private final int httpStatusCode;
@@ -260,8 +265,12 @@ class HttpWriter {
 				tempFile = File.createTempFile("directorylisting", ".html");
 				tempFile.deleteOnExit();
 				
-//				for (File file : requestResource.listFiles())
-//				Configuration.getConfig().getDirectoryIndex().contains("")
+//				for (File file : requestResource.listFiles(new HiddenFilter())) {
+//					if (Configuration.getConfig().getDirectoryIndex().contains(file.getName())) {
+//						
+//					}
+//					
+//				}
 //				getByteArray(file)
 				
 				PrintWriter tempFilePrintWriter = new PrintWriter(
@@ -331,7 +340,7 @@ class HttpWriter {
 		} catch (final IOException ex) {
 			Log.warn(ex.getMessage());
 		}
-		// unknown content type - browser handle it
+		// unknown content type - browser handles it
 		return "application/octet-stream";
 	}
 

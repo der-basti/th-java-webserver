@@ -63,7 +63,7 @@ class HttpHandler implements Runnable {
 				Log.debug("Request header ["
 						+ this.socket.getInetAddress().getHostName() + "]: "
 						+ line);
-				// support GET ... HTTP 1.0 & 1.1 requests
+				// support GET ... HTTP 1.0 & 1.1 requests 
 				if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", line)) {
 					requestResource = new File(Configuration.getConfig()
 							.getWebRoot() + line.split(" ")[1]);
