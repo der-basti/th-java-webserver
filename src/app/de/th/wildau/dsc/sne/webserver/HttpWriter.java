@@ -50,7 +50,7 @@ class HttpWriter {
 			break;
 		}
 
-		Log.debug("ContextType: " + getContentType(requestResource));
+		// XXX Log.debug("ContextType: " + getContentType(requestResource));
 
 		// generate and append the response
 		try {
@@ -116,8 +116,6 @@ class HttpWriter {
 	 * @return String http header
 	 */
 	private String generateHeader(long bodyLength, File requestResource) {
-
-		Log.debug("method... HttpWriter.generateHeader()");
 
 		// TODO [dsc]
 		String header = new String("HTTP/1.1 ");
@@ -282,7 +280,10 @@ class HttpWriter {
 				// for (File file : requestResource.listFiles())
 				// Configuration.getConfig().getDirectoryIndex().contains("")
 				// getByteArray(file)
+				// TODO [dsc] check existing dir index's
 
+				// TODO [dsc] please generate the dir listing in a separate
+				// method
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
 				String style = "<style>"

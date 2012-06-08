@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -50,10 +51,9 @@ public class WebServer {
 
 		Log.info("instantiating web server");
 		try {
-			ServerSocket server = new ServerSocket(Configuration
-					.getConfig().getServerPort());
-			Log.debug("bound port "
-					+ Configuration.getConfig().getServerPort());
+			ServerSocket server = new ServerSocket(Configuration.getConfig()
+					.getServerPort());
+			Log.debug("bound port " + Configuration.getConfig().getServerPort());
 
 			int corePoolSize = Runtime.getRuntime().availableProcessors();
 			int maxPoolSize = (2 * corePoolSize) + 1;
@@ -76,6 +76,11 @@ public class WebServer {
 					Log.debug("current threads: " + threadPool.getActiveCount());
 				} catch (final IOException ex) {
 					Log.error("Connection failed!", ex);
+				} catch (final RejectedExecutionException ex) {
+					// http://stackoverflow.com/questions/1519725/why-does-executors-newcachedthreadpool-throw-java-util-concurrent-rejectedexecut
+					Log.fatal(
+							"java.util.concurrent.RejectedExecutionException",
+							ex);
 				} catch (final Exception ex) {
 					Log.fatal("Unknown error!", ex);
 				}
@@ -125,8 +130,8 @@ public class WebServer {
 			Log.debug(Configuration.getInstance().toString());
 
 			if (Configuration.getConfig().getProxyHost() != null) {
-				System.setProperty("http.proxyHost", Configuration
-						.getConfig().getProxyHost());
+				System.setProperty("http.proxyHost", Configuration.getConfig()
+						.getProxyHost());
 				System.setProperty("http.proxyPort", String
 						.valueOf(Configuration.getConfig().getProxyPort()));
 			}
