@@ -41,7 +41,7 @@ public class Log {
 	}
 
 	/**
-	 * Static method, which returns only one instance of this class.
+	 * Static method which returns only one instance of this class.
 	 */
 	public static void createInstance() {
 		new Log(new GregorianCalendar(), Configuration.getConfig()
@@ -133,7 +133,7 @@ public class Log {
 	}
 
 	/**
-	 * Help method, which returns the current time as a <code>String</code>.<br />
+	 * Help method which returns the current time as a <code>String</code>.<br />
 	 * <br />
 	 * <b>Possible pattern/values:</b><br />
 	 * y = year; M = month in year; d = day in month; h = hour in am/pm (1-12);

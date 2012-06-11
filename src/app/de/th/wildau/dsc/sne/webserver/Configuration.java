@@ -53,7 +53,7 @@ final class Configuration {
 
 		if (INSTANCE == null) {
 			throw new IllegalStateException(
-					"No configuration are loaded. Please call createInstance()");
+					"Configuration isn't loaded. Please call createInstance()");
 		}
 		return INSTANCE;
 	}

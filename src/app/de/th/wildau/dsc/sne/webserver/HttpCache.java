@@ -13,7 +13,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Http cache (singelton).
+ * Http cache (Singleton).
  * 
  * @author sne
  * 
@@ -21,15 +21,33 @@ import java.util.concurrent.TimeUnit;
 public class HttpCache {
 
 	private static HttpCache INSTANCE;
-	private final static int cacheSize = 25;
-	private final static int cacheTime = 60;
+	private final int cacheSize;
+	private final int cacheTime;
 
 	private Map<String, HttpCacheFile> cache;
 
-	private HttpCache() {
+	/**
+	 * TODO javadoc
+	 * 
+	 * @param cacheSize
+	 *            element size
+	 * @param cacheTime
+	 *            in seconds
+	 */
+	private HttpCache(int cacheSize, int cacheTime) {
 
+		this.cacheSize = cacheSize;
+		this.cacheTime = cacheTime;
 		this.cache = Collections
 				.synchronizedMap(new HashMap<String, HttpCacheFile>());
+	}
+
+	/**
+	 * Use default values cacheSize:25elements cacheTime:60s
+	 */
+	private HttpCache() {
+
+		this(25, 60);
 	}
 
 	public static synchronized final HttpCache getInstance() {
@@ -40,9 +58,32 @@ public class HttpCache {
 		return INSTANCE;
 	}
 
-	public boolean contains(String resource) {
+	/**
+	 * Check resource (can read and is none script file). After that check cache
+	 * contains.
+	 * 
+	 * @param resource
+	 * @return
+	 */
+	public boolean contains(File resource) {
 
-		return INSTANCE.cache.containsKey(resource);
+		if (!isScriptFile(resource))
+			return INSTANCE.cache.containsKey(resource.toString());
+		return false;
+	}
+
+	private boolean isScriptFile(File resource) {
+
+		if (resource != null && resource.canRead()) {
+			for (ScriptLanguage scriptLanguage : ScriptLanguage.values()) {
+				if (resource.getName().toLowerCase()
+						.endsWith(scriptLanguage.getFileExtension())) {
+					Log.debug("Don't cache script file: " + resource.toString());
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -53,21 +94,26 @@ public class HttpCache {
 	 */
 	public final synchronized void put(String resource, int[] content) {
 
-		// don't cache script files
-		if (resource != null) {
-			// dynamic way - static four if checks...
-//			for (ScriptLanguage scriptLanguage : ScriptLanguage.values()) {
-//				if (resource.trim().toLowerCase()
-//						.endsWith(scriptLanguage.getFileExtension())) {
-//					Log.debug("Can not cache script file: " + resource);
-//					return;
-//				}
-//			}
-		}
+		// check resource - don't cache script files
 
-		if (INSTANCE.cache.containsKey(resource)) {
+		if (!INSTANCE.cache.containsKey(resource)) {
+			if (INSTANCE.cache.size() > cacheSize) {
+				// clean cache
+				Iterator<Entry<String, HttpCacheFile>> ite = INSTANCE.cache
+						.entrySet().iterator();
+				while (ite.hasNext()) {
+					Entry<String, HttpCacheFile> temp = ite.next();
+					if (olderThen(temp.getValue().getCacheTime(), cacheTime)) {
+						INSTANCE.cache.remove(temp.getKey());
+					}
+				}
+			}
+			INSTANCE.cache.put(resource,
+					new HttpCacheFile(System.currentTimeMillis(), content));
+		} else {
 			// in cache
-			if (olderThen(INSTANCE.cache.get(resource).getDate(), cacheTime)) {
+			if (olderThen(INSTANCE.cache.get(resource).getCacheTime(),
+					cacheTime)) {
 				// reload
 				List<Integer> tempContent = new ArrayList<Integer>();
 				FileInputStream fis;
@@ -91,20 +137,6 @@ public class HttpCache {
 					Log.error("Can not read file.", ex);
 				}
 			}
-		} else {
-			if (INSTANCE.cache.size() > cacheSize) {
-				// clean cache
-				Iterator<Entry<String, HttpCacheFile>> ite = INSTANCE.cache
-						.entrySet().iterator();
-				while (ite.hasNext()) {
-					Entry<String, HttpCacheFile> temp = ite.next();
-					if (olderThen(temp.getValue().getDate(), cacheTime)) {
-						INSTANCE.cache.remove(temp.getKey());
-					}
-				}
-			}
-			INSTANCE.cache.put(resource,
-					new HttpCacheFile(System.currentTimeMillis(), content));
 		}
 	}
 
