@@ -13,6 +13,8 @@ import java.net.URISyntaxException;
 
 class HttpWriter {
 
+	// XXX [dsc] check win, lin, mac default line separator
+	// return System.getProperty("line.separator");
 	private static final String LINE_BREAK = "\r\n";
 
 	private final int httpStatusCode;
@@ -122,48 +124,36 @@ class HttpWriter {
 
 		switch (this.httpStatusCode) {
 		case 200:
-			header += "200 OK" + getLineBreak();
+			header += "200 OK" + LINE_BREAK;
 			if (!requestResource.isDirectory()) {
-				header += "Content-Type: " + getContentType(requestResource)
-						+ "; charset=utf-8" + getLineBreak();
+				header = header + "Content-Type: "
+						+ getContentType(requestResource) + "; charset=utf-8"
+						+ LINE_BREAK;
 			} else {
-				header += "Content-Type: text/html; charset=utf-8"
-						+ getLineBreak();
+				header = header + "Content-Type: text/html; charset=utf-8"
+						+ LINE_BREAK;
 			}
 			break;
 		case 403:
-			header += "403 Forbidden" + getLineBreak()
-					+ "Content-Type: text/html; charset=utf-8" + getLineBreak();
+			header = header + "403 Forbidden" + LINE_BREAK
+					+ "Content-Type: text/html; charset=utf-8" + LINE_BREAK;
 			break;
 		case 404:
-			header += "404 File Not Found" + getLineBreak()
-					+ "Content-Type: text/html; charset=utf-8" + getLineBreak();
+			header = header + "404 File Not Found" + LINE_BREAK
+					+ "Content-Type: text/html; charset=utf-8" + LINE_BREAK;
 			break;
 		default:
-			header += "500 Internal Server Error" + getLineBreak()
-					+ "Content-Type: text/html; charset=utf-8" + getLineBreak();
+			header = header + "500 Internal Server Error" + LINE_BREAK
+					+ "Content-Type: text/html; charset=utf-8" + LINE_BREAK;
 
 			break;
 		}
 		header += "Content-Length: " + bodyLength;
 
 		// add empty line
-		header += getLineBreak() + getLineBreak();
+		header = header + LINE_BREAK + LINE_BREAK;
 
 		return header;
-	}
-
-	/**
-	 * Please use {@link #LINE_BREAK}
-	 * 
-	 * @return
-	 */
-	@Deprecated
-	private String getLineBreak() {
-
-		// XXX [dsc] check win, lin, mac default line separator
-		// return System.getProperty("line.separator");
-		return "\r\n";
 	}
 
 	/**
