@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -66,17 +67,29 @@ public class WebServer {
 					workerQueue);
 			threadPool.prestartAllCoreThreads();
 
+			RejectedExecutionHandler handler = RejectedExecutionHandler.class
+					.newInstance();
+
 			while (true) {
 				Socket socket;
 				try {
 					socket = server.accept();
 					Log.info(socket.getInetAddress().getHostName()
 							+ " client request");
-					threadPool.execute(new HttpHandler(socket));
+
+					// FIXME [sne] RejectedExecutionException
+					// synchronized (threadPool) {
+					// threadPool.execute(new HttpHandler(socket));
+					// }
+
+					handler.rejectedExecution(new HttpHandler(socket),
+							threadPool);
+
 					Log.debug("current threads: " + threadPool.getActiveCount());
 				} catch (final IOException ex) {
 					Log.error("Connection failed!", ex);
 				} catch (final RejectedExecutionException ex) {
+					// FIXME [sne] RejectedExecutionException
 					// http://stackoverflow.com/questions/1519725/why-does-executors-newcachedthreadpool-throw-java-util-concurrent-rejectedexecut
 					Log.fatal(
 							"java.util.concurrent.RejectedExecutionException",
@@ -88,6 +101,8 @@ public class WebServer {
 		} catch (final IOException ex) {
 			Log.fatal("Can not start the server!", ex);
 			System.err.println("Can not start the server! " + ex.getMessage());
+		} catch (final Exception ex) {
+			Log.fatal("Unknown error!", ex);
 		}
 	}
 
