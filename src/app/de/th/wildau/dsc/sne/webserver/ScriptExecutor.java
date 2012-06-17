@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The script executer is a class with can interprets script file over the
+ * The script executer is a class which interpret script file over the
  * cmd/cli.
  * 
  * @author sne
