@@ -19,11 +19,17 @@ import java.util.regex.Pattern;
  * @author sne
  * 
  */
-class HttpHandler implements Runnable {
+public class HttpHandler implements Runnable {
 
 	private Socket socket;
 
-	protected HttpHandler(Socket socket) {
+	/**
+	 * Constructor.
+	 * 
+	 * @param socket
+	 *            from the server / client connecion
+	 */
+	public HttpHandler(Socket socket) {
 		this.socket = socket;
 	}
 
@@ -47,6 +53,13 @@ class HttpHandler implements Runnable {
 		}
 	}
 
+	/**
+	 * Internal help method, which process the request (read client request and
+	 * generate on this the response).
+	 * 
+	 * @param input
+	 * @param output
+	 */
 	private void processRequest(InputStream input, OutputStream output) {
 
 		try {
@@ -55,34 +68,41 @@ class HttpHandler implements Runnable {
 			File requestResource = null;
 
 			String line = "";
+			String request = "";
 			while (!(line = bufferedReader.readLine()).isEmpty()) {
-				Log.debug("Request header ["
-						+ this.socket.getInetAddress().getHostName() + "]: "
-						+ line);
+				request = request + line;
 				// support GET ... HTTP 1.0 & 1.1 requests
 				if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", line)) {
 					requestResource = new File(Configuration.getConfig()
 							.getWebRoot() + line.split(" ")[1]);
 				} else if (Pattern.matches("^POST /*.*", line)) {
 					Log.warn("Doesn't support POST requests!");
-					// TODO return error
-					break;
+					return;
 				}
 			}
+			Log.debug("Request [" + this.socket.getInetAddress().getHostName()
+					+ "] " + request);
 
-			// check cache
-
-			Log.debug("request resource: " + requestResource.toString());
+			Log.info("request resource: " + requestResource.toString());
 			HttpWriter httpWriter = null;
 
+			// check cache
+			if (HttpCache.getInstance().constrains(requestResource)) {
+				Log.debug("use http cache");
+				new HttpWriter(output, HttpCache.getInstance().getValue(
+						requestResource));
+				return;
+			}
+
+			// normal - handle the request
 			if (!requestResource.exists()) {
-				Log.info("Request resource doesn't exists: "
+				Log.debug("Request resource doesn't exists: "
 						+ requestResource.getPath());
 
 				httpWriter = new HttpWriter(404); //
 				httpWriter.write(output, requestResource);
 			} else if (requestResource.isDirectory()) {
-				Log.info("Request resource is a directory: "
+				Log.debug("Request resource is a directory: "
 						+ requestResource.toString());
 
 				if (requestResource.canRead()) {
@@ -96,7 +116,7 @@ class HttpHandler implements Runnable {
 					httpWriter.write(output, requestResource);
 				}
 			} else if (requestResource.isFile()) {
-				Log.info("Request resource is a file: "
+				Log.debug("Request resource is a file: "
 						+ requestResource.toString());
 
 				if (requestResource.isHidden()) {
@@ -112,13 +132,13 @@ class HttpHandler implements Runnable {
 					httpWriter.write(output, requestResource);
 				}
 			} else {
-
+				// TODO [dsc] [sne] whats here?
 			}
 		} catch (final IOException ex) {
 			Log.error("Can not read request: " + ex.getMessage());
 		} catch (final Exception ex) {
 			// FIXME [sne] null point ex (get index.html)
-			Log.fatal("Catch processRequest() exception!", ex);
+			Log.fatal("Catch all processRequest() exception!", ex);
 		}
 	}
 

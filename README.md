@@ -58,13 +58,11 @@ TH-Wildau - Betriebssysteme - Belegarbeit
 [ok]- support other files (gifs, jpgs, pngs, pdfs, …)
 [ok]- log as singelton
 [ok]- log - log levels
+[ok]- implement a cache
+[ok]- execute php, perl, ruby, python, ...
 - log - zip old log files (automatic)
-- implement a cache
-- DOS attacks?
 - .htaccess
 - custom 404 page
-- http://huschi.net/20_91_de.html
-[ok]- execute php, perl, ruby, python, ...
 
 =============================================================================
 ==== DOCUMENTATION

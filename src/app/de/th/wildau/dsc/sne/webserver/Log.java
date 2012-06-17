@@ -154,7 +154,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * DEBUG indicates a detailed tracing message.
 	 * 
 	 * @param text
 	 */
@@ -164,7 +164,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * INFO is a message level for informational messages.
 	 * 
 	 * @param text
 	 */
@@ -174,7 +174,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * WARN is a message level indicating a potential problem.
 	 * 
 	 * @param text
 	 */
@@ -184,7 +184,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * ERROR is a message level of a problem.
 	 * 
 	 * @param text
 	 */
@@ -194,7 +194,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * @see #error(String)
 	 * 
 	 * @param text
 	 * @param errorMessage
@@ -205,7 +205,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * FATAL is a message level of a high critical problem.
 	 * 
 	 * @param text
 	 */
@@ -215,7 +215,7 @@ public class Log {
 	}
 
 	/**
-	 * TODO javadoc
+	 * @see #fatal(String)
 	 * 
 	 * @param text
 	 * @param fatalMessage
