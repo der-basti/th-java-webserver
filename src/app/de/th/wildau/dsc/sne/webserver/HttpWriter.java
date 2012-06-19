@@ -12,7 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 /**
- * The HttpWriter generate and write the http response (header and body) in the
+ * The HttpWriter generates and writes the http response (header and body) in the
  * output stream.
  * 
  */
@@ -25,7 +25,7 @@ public class HttpWriter {
 	private final int httpStatusCode;
 
 	/**
-	 * This constructor is only for caches. He write the byte array directly.
+	 * This constructor is only for caches. It writes the byte array directly.
 	 * The http Status Code is in this case <b>-1</b>.
 	 * 
 	 * @param outputStream
@@ -45,7 +45,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Constructor which prepare the server http response.
+	 * Constructor which prepares the server http response.
 	 * 
 	 * @param httpStatusCode
 	 */
@@ -55,7 +55,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * This method write the http response in the given output stream.
+	 * This method writes the http response in the given output stream.
 	 * 
 	 * @param outputStream
 	 * @param requestResource
@@ -106,7 +106,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which convert a string (utf-8) into a byte array.
+	 * Internal help method which converts a string (utf-8) into a byte array.
 	 * 
 	 * @param string
 	 * @return byte[]
@@ -119,7 +119,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which convert a file into a byte array.
+	 * Internal help method which converts a file into a byte array.
 	 * 
 	 * @param file
 	 * @return byte[]
@@ -143,7 +143,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which check is the given file a script file.
+	 * Internal help method which checks if the given file a script file.
 	 * 
 	 * @param file
 	 * @return {@link ScriptLanguage} is supported or null
@@ -160,7 +160,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which generates the http header.
+	 * Internal help method which generates the http header.
 	 * 
 	 * @param body
 	 * @param requestResource
@@ -206,7 +206,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method, which generates the http body.
+	 * Internal help method which generates the http body.
 	 * 
 	 * @param outputStream
 	 * @param requestResource
@@ -225,51 +225,7 @@ public class HttpWriter {
 				tempFile = requestResource;
 			} else if (requestResource.isDirectory()
 					&& requestResource.canRead()) {
-
-				tempFile = File.createTempFile("directorylisting", ".html");
-				tempFile.deleteOnExit();
-				// for (File file : requestResource.listFiles())
-				// Configuration.getConfig().getDirectoryIndex().contains("")
-				// getByteArray(file)
-				// TODO [dsc] check existing dir index's
-				// TODO [dsc] please generate the dir listing in a separate
-				// method
-				PrintWriter tempFilePrintWriter = new PrintWriter(
-						new BufferedWriter(new FileWriter(tempFile)));
-				String style = "<style>"
-						+ "ul li:nth-child(2n) {background-color:#E6E6E6;} "
-						+ "li {list-style:none;}"
-						+ "a:visited {color:#0000FF;}"
-						+ "body {margin:0; padding-top:15px;}" + "</style>";
-
-				tempFilePrintWriter.print("<html><head>" + style
-						+ "</head><body><ul>");
-				// show directory info
-				tempFilePrintWriter.print("<h1>Directory: "
-						+ requestResource.toString().replaceFirst(
-								Configuration.getConfig().getWebRoot(), "")
-						+ "</h1>");
-				// add parent link
-				if (!Configuration.getConfig().getWebRoot()
-						.startsWith(requestResource.getAbsolutePath())) {
-					tempFilePrintWriter
-							.print("<li><a href=\"..\">/..</a></li>");
-				}
-				// file listing
-				for (File file : requestResource.listFiles(new HiddenFilter())) {
-					if (file.isDirectory()) {
-						tempFilePrintWriter.print("<li><a href=\""
-								+ file.getName() + "/\">" + file.getName()
-								+ "</a></li>");
-					} else if (file.isFile()) {
-						tempFilePrintWriter.print("<li><a href=\""
-								+ file.getName() + "\">" + file.getName()
-								+ "</a></li>");
-					}
-				}
-				tempFilePrintWriter.print("</ul></body></html>");
-				tempFilePrintWriter.flush();
-				tempFilePrintWriter.close();
+				tempFile = createDirectoryListing(requestResource);
 			}
 			break;
 		case 403:
@@ -290,8 +246,60 @@ public class HttpWriter {
 		return tempFile;
 	}
 
+	private File createDirectoryListing(File requestResource) throws IOException {
+		File tempFile = File.createTempFile("directorylisting", ".html");
+		tempFile.deleteOnExit();
+		
+		for (File file : requestResource.listFiles()) {
+			for (String item: Configuration.getConfig().getDirectoryIndex()) {
+				if (file.getName().equals(item)) {
+					return file;
+				}
+			}
+		}
+		
+		PrintWriter tempFilePrintWriter = new PrintWriter(
+				new BufferedWriter(new FileWriter(tempFile)));
+		String style = "<style>"
+				+ "ul li:nth-child(2n) {background-color:#E6E6E6;} "
+				+ "li {list-style:none;}"
+				+ "a:visited {color:#0000FF;}"
+				+ "body {margin:0; padding-top:15px;}" + "</style>";
+
+		tempFilePrintWriter.print("<html><head>" + style
+				+ "</head><body><ul>");
+		// show directory info
+		tempFilePrintWriter.print("<h1>Directory: "
+				+ requestResource.toString().replaceFirst(
+						Configuration.getConfig().getWebRoot(), "")
+				+ "</h1>");
+		// add parent link
+		if (!Configuration.getConfig().getWebRoot()
+				.startsWith(requestResource.getAbsolutePath())) {
+			tempFilePrintWriter
+					.print("<li><a href=\"..\">/..</a></li>");
+		}
+		// file listing
+		for (File file : requestResource.listFiles(new HiddenFilter())) {
+			if (file.isDirectory()) {
+				tempFilePrintWriter.print("<li><a href=\""
+						+ file.getName() + "/\">" + file.getName()
+						+ "</a></li>");
+			} else if (file.isFile()) {
+				tempFilePrintWriter.print("<li><a href=\""
+						+ file.getName() + "\">" + file.getName()
+						+ "</a></li>");
+			}
+		}
+		tempFilePrintWriter.print("</ul></body></html>");
+		tempFilePrintWriter.flush();
+		tempFilePrintWriter.close();
+		return tempFile;
+	}
+		
+
 	/**
-	 * Help method, which finds the content type of the request resource file.
+	 * Help method which finds the content type of the requestResource file.
 	 * 
 	 * @param requestResource
 	 * @return content type
@@ -320,7 +328,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Getter which return the current http status code.
+	 * Getter which returns the current http status code.
 	 * 
 	 * @return http status code
 	 */
