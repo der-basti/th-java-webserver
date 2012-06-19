@@ -1,7 +1,7 @@
 package de.th.wildau.dsc.sne.webserver;
 
 /**
- * TODO javadoc
+ * Enumeration of possible supported script languages.
  * 
  * @author sne
  * 
@@ -11,8 +11,14 @@ public enum ScriptLanguage {
 	PHP("", ".php"), PERL("", ".pl"), PYTHON("", ".py"), RUBY("", ".rb");
 
 	private String executeComand;
-	private String fileExtension;
+	private final String fileExtension;
 
+	/**
+	 * Hidden constructor.
+	 * 
+	 * @param executeCommand
+	 * @param fileExtension
+	 */
 	private ScriptLanguage(String executeCommand, String fileExtension) {
 		this.executeComand = executeCommand;
 		this.fileExtension = fileExtension;
@@ -20,7 +26,8 @@ public enum ScriptLanguage {
 
 	@Override
 	public String toString() {
-		return this.name() + " (" + this.executeComand + ")";
+		return this.name() + " (" + this.fileExtension + ", "
+				+ this.executeComand + ")";
 	}
 
 	public String getExecuteComand() {

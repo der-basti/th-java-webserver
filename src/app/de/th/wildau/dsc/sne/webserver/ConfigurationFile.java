@@ -36,7 +36,6 @@ public class ConfigurationFile implements Cloneable {
 	private String proxyHost;
 	@XmlElement(name = "proxy-port", required = false)
 	private int proxyPort;
-	// XXX proxy config
 	// XXX http status pages
 	// XXX gzip
 	@XmlElementWrapper(name = "directory-index", required = false)

@@ -9,7 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * TODO javadoc
+ * The script executer is a class which interpret script file over the
+ * cmd/cli.
  * 
  * @author sne
  * 
@@ -74,7 +75,7 @@ public class ScriptExecutor {
 	}
 
 	/**
-	 * TODO javadoc
+	 * This method try to execute a file with the given {@link ScriptLanguage}.
 	 * 
 	 * @param command
 	 *            to execute
@@ -88,7 +89,7 @@ public class ScriptExecutor {
 	}
 
 	/**
-	 * TODO javadoc
+	 * Help method, which execute commands.
 	 */
 	private String execute(String command) {
 
@@ -98,7 +99,7 @@ public class ScriptExecutor {
 			BufferedReader in = new BufferedReader(new InputStreamReader(
 					process.getInputStream()));
 			StringBuilder sb = new StringBuilder();
-			String line;
+			String line = "";
 			while ((line = in.readLine()) != null) {
 				sb.append(line);
 			}

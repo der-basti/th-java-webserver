@@ -1,16 +1,10 @@
 package de.th.wildau.dsc.sne.webserver;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Http cache (Singleton).
@@ -21,35 +15,39 @@ import java.util.concurrent.TimeUnit;
 public class HttpCache {
 
 	private static HttpCache INSTANCE;
-	private final int cacheSize;
-	private final int cacheTime;
 
-	private Map<String, HttpCacheFile> cache;
+	private final int cacheSize;
+	private Queue<String> queue;
+	private Map<String, byte[]> cache;
 
 	/**
-	 * TODO javadoc
+	 * Hidden constructor. Http cache is a singelton.
 	 * 
 	 * @param cacheSize
 	 *            element size
 	 * @param cacheTime
 	 *            in seconds
 	 */
-	private HttpCache(int cacheSize, int cacheTime) {
+	private HttpCache(int cacheSize) {
 
 		this.cacheSize = cacheSize;
-		this.cacheTime = cacheTime;
-		this.cache = Collections
-				.synchronizedMap(new HashMap<String, HttpCacheFile>());
+		this.queue = new ConcurrentLinkedQueue<String>();
+		this.cache = new ConcurrentHashMap<String, byte[]>();
 	}
 
 	/**
-	 * Use default values cacheSize:25elements cacheTime:60s
+	 * Use default constructor. Cache 25 elements.
 	 */
 	private HttpCache() {
 
-		this(25, 60);
+		this(25);
 	}
 
+	/**
+	 * Singleton call point.
+	 * 
+	 * @return
+	 */
 	public static synchronized final HttpCache getInstance() {
 
 		if (INSTANCE == null) {
@@ -58,109 +56,49 @@ public class HttpCache {
 		return INSTANCE;
 	}
 
-	/**
-	 * Check resource (can read and is none script file). After that check cache
-	 * contains.
-	 * 
-	 * @param resource
-	 * @return
-	 */
-	public boolean contains(File resource) {
-
-		if (!isScriptFile(resource))
-			return INSTANCE.cache.containsKey(resource.toString());
-		return false;
+	public byte[] getValue(File resource) {
+		return INSTANCE.cache.get(resource.toString());
 	}
 
-	private boolean isScriptFile(File resource) {
+	public void put(File resource, byte[] header, byte[] body) {
 
-		if (resource != null && resource.canRead()) {
-			for (ScriptLanguage scriptLanguage : ScriptLanguage.values()) {
-				if (resource.getName().toLowerCase()
-						.endsWith(scriptLanguage.getFileExtension())) {
-					Log.debug("Don't cache script file: " + resource.toString());
-					return true;
-				}
+		if (isInterpretedFile(resource)) {
+			Log.debug("Don't cache interpreted files.");
+			return;
+		}
+
+		byte[] content = new byte[header.length + body.length];
+		int headerLength = header.length;
+
+		for (int i = 0; i < content.length; ++i) {
+			content[i] = i < headerLength ? header[i] : body[i - headerLength];
+		}
+
+		put(resource, content);
+	}
+
+	private boolean isInterpretedFile(File file) {
+
+		for (ScriptLanguage scriptLanguage : WebServer.supportedScriptLanguages) {
+			if (file.getName().toLowerCase()
+					.endsWith(scriptLanguage.getFileExtension())) {
+				return true;
 			}
 		}
 		return false;
 	}
 
-	/**
-	 * TODO javadoc
-	 * 
-	 * @param resource
-	 * @param content
-	 */
-	public final synchronized void put(String resource, int[] content) {
+	private void put(File resource, byte[] content) {
 
-		// check resource - don't cache script files
-
-		if (!INSTANCE.cache.containsKey(resource)) {
-			if (INSTANCE.cache.size() > cacheSize) {
-				// clean cache
-				Iterator<Entry<String, HttpCacheFile>> ite = INSTANCE.cache
-						.entrySet().iterator();
-				while (ite.hasNext()) {
-					Entry<String, HttpCacheFile> temp = ite.next();
-					if (olderThen(temp.getValue().getCacheTime(), cacheTime)) {
-						INSTANCE.cache.remove(temp.getKey());
-					}
-				}
-			}
-			INSTANCE.cache.put(resource,
-					new HttpCacheFile(System.currentTimeMillis(), content));
-		} else {
-			// in cache
-			if (olderThen(INSTANCE.cache.get(resource).getCacheTime(),
-					cacheTime)) {
-				// reload
-				List<Integer> tempContent = new ArrayList<Integer>();
-				FileInputStream fis;
-				byte[] buffer = new byte[1024];
-				int bytes = 0;
-				try {
-					fis = new FileInputStream(new File(resource));
-					while ((bytes = fis.read(buffer)) != -1) {
-						tempContent.add(bytes);
-					}
-
-					// not the best way
-					int[] intArray = new int[tempContent.size()];
-					int i = 0;
-					for (Integer e : tempContent) {
-						intArray[i++] = e.intValue();
-					}
-
-					INSTANCE.cache.get(resource).setContent(intArray);
-				} catch (IOException ex) {
-					Log.error("Can not read file.", ex);
-				}
-			}
+		if (INSTANCE.cache.size() >= INSTANCE.cacheSize) {
+			String remove = INSTANCE.queue.poll();
+			INSTANCE.cache.remove(remove);
 		}
+		INSTANCE.queue.add(resource.getName());
+		INSTANCE.cache.put(resource.toString(), content);
 	}
 
-	private synchronized boolean olderThen(long timeMillis, int seconds) {
-
-		if (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
-				- timeMillis) > seconds) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * TODO javadoc
-	 * 
-	 * possible null
-	 * 
-	 * @param resource
-	 * @return
-	 */
-	public final int[] get(String resource) {
-
-		if (INSTANCE.cache.containsKey(resource))
-			return INSTANCE.cache.get(resource).getContent();
-		return null;
+	public boolean constrains(File resource) {
+		return INSTANCE.cache.containsKey(resource.toString());
 	}
 }

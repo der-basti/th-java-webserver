@@ -9,28 +9,13 @@ package de.th.wildau.dsc.sne.webserver;
  */
 public enum LogLevel {
 
-	/**
-	 * 
-	 */
 	FATAL,
 
-	/**
-	 * 
-	 */
 	ERROR,
 
-	/**
-	 * 
-	 */
 	WARN,
 
-	/**
-	 * 
-	 */
 	INFO,
 
-	/**
-	 * 
-	 */
 	DEBUG;
 }

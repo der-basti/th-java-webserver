@@ -8,9 +8,8 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -22,9 +21,9 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 /**
- * TODO javadoc
+ * This is the main web server class.
  * 
- * @author
+ * @author dsc & sne
  */
 public class WebServer {
 
@@ -40,11 +39,29 @@ public class WebServer {
 		new WebServer(startArguments);
 	}
 
+	/**
+	 * Web server / main constructor.
+	 * 
+	 * @param startArguments
+	 */
 	public WebServer(String[] startArguments) {
 
 		loadConfiguration(startArguments);
+		Log.debug(Configuration.getInstance().toString());
 
-		// find scripting languages
+		Log.debug("Information about the OS: " + System.getProperty("os.name")
+				+ " - " + System.getProperty("os.version") + " - "
+				+ System.getProperty("os.arch"));
+
+		if (Configuration.getConfig().getProxyHost() != null) {
+			Log.debug("setup proxy configuration");
+			System.setProperty("http.proxyHost", Configuration.getConfig()
+					.getProxyHost());
+			System.setProperty("http.proxyPort",
+					String.valueOf(Configuration.getConfig().getProxyPort()));
+		}
+
+		Log.debug("find supported scripting languages");
 		supportedScriptLanguages = Collections.unmodifiableList(ScriptExecutor
 				.getSupportedScriptLanguages());
 		Log.debug("Supported Script Languages "
@@ -58,17 +75,19 @@ public class WebServer {
 
 			int corePoolSize = Runtime.getRuntime().availableProcessors();
 			int maxPoolSize = (2 * corePoolSize) + 1;
-			ArrayBlockingQueue<Runnable> workerQueue = new ArrayBlockingQueue<Runnable>(
-					maxPoolSize);
-			long keepAliveTime = 5;
-			// XXX [sne] http://www.ibm.com/developerworks/library/j-jtp0730/
+			Log.debug("core/max pool size: " + corePoolSize + "/" + maxPoolSize);
+			LinkedBlockingQueue<Runnable> workerQueue = new LinkedBlockingQueue<Runnable>();
+			long keepAliveTime = 30;
+			/*
+			 * keepAliveTime - If the pool currently has more than corePoolSize
+			 * threads, excess threads will be terminated if they have been idle
+			 * for more than the keepAliveTime.
+			 */
+
 			ThreadPoolExecutor threadPool = new ThreadPoolExecutor(
 					corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS,
 					workerQueue);
 			threadPool.prestartAllCoreThreads();
-
-			RejectedExecutionHandler handler = RejectedExecutionHandler.class
-					.newInstance();
 
 			while (true) {
 				Socket socket;
@@ -76,20 +95,11 @@ public class WebServer {
 					socket = server.accept();
 					Log.info(socket.getInetAddress().getHostName()
 							+ " client request");
-
-					// FIXME [sne] RejectedExecutionException
-					// synchronized (threadPool) {
-					// threadPool.execute(new HttpHandler(socket));
-					// }
-
-					handler.rejectedExecution(new HttpHandler(socket),
-							threadPool);
-
+					threadPool.execute(new HttpHandler(socket));
 					Log.debug("current threads: " + threadPool.getActiveCount());
 				} catch (final IOException ex) {
 					Log.error("Connection failed!", ex);
 				} catch (final RejectedExecutionException ex) {
-					// FIXME [sne] RejectedExecutionException
 					// http://stackoverflow.com/questions/1519725/why-does-executors-newcachedthreadpool-throw-java-util-concurrent-rejectedexecut
 					Log.fatal(
 							"java.util.concurrent.RejectedExecutionException",
@@ -111,8 +121,9 @@ public class WebServer {
 	 * CALL!</b>
 	 * 
 	 * @param startArguments
+	 *            array
 	 */
-	private static void loadConfiguration(String[] startArguments) {
+	private void loadConfiguration(String[] startArguments) {
 
 		Options options = new Options();
 		options.addOption("c", true, "specify server configuration file");
@@ -142,14 +153,6 @@ public class WebServer {
 
 			Log.createInstance();
 			Log.info("loaded server configuration");
-			Log.debug(Configuration.getInstance().toString());
-
-			if (Configuration.getConfig().getProxyHost() != null) {
-				System.setProperty("http.proxyHost", Configuration.getConfig()
-						.getProxyHost());
-				System.setProperty("http.proxyPort", String
-						.valueOf(Configuration.getConfig().getProxyPort()));
-			}
 		} catch (final Exception ex) {
 			System.err.println("Can not load server configuration file.");
 		}

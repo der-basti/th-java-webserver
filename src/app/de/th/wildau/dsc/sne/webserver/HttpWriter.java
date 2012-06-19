@@ -12,11 +12,11 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 /**
+ * The HttpWriter generate and write the http response (header and body) in the
+ * output stream.
  * 
- * @author sne and dsc
  */
-
-class HttpWriter {
+public class HttpWriter {
 
 	// XXX [dsc] check win, lin, mac default line separator
 	// return System.getProperty("line.separator");
@@ -25,46 +25,63 @@ class HttpWriter {
 	private final int httpStatusCode;
 
 	/**
-	 * TODO javadoc
+	 * This constructor is only for caches. He write the byte array directly.
+	 * The http Status Code is in this case <b>-1</b>.
 	 * 
-	 * @param httpCode
+	 * @param outputStream
+	 * @param direct
+	 *            byte[]
 	 */
-	protected HttpWriter(int httpCode) {
+	protected HttpWriter(OutputStream outputStream, byte[] direct) {
 
-		this.httpStatusCode = httpCode;
+		//
+		this.httpStatusCode = -1;
+
+		try {
+			outputStream.write(direct);
+		} catch (final IOException ex) {
+			Log.error("Can not write response / output stream! ", ex);
+		}
 	}
 
 	/**
-	 * TODO javadoc
+	 * Constructor which prepare the server http response.
+	 * 
+	 * @param httpStatusCode
+	 */
+	public HttpWriter(int httpStatusCode) {
+
+		this.httpStatusCode = httpStatusCode;
+	}
+
+	/**
+	 * This method write the http response in the given output stream.
 	 * 
 	 * @param outputStream
 	 * @param requestResource
 	 */
-	protected void write(OutputStream outputStream, File requestResource) {
+	public void write(OutputStream outputStream, File requestResource) {
 
 		switch (this.httpStatusCode) {
+		case -1:
+			Log.warn("HTTP -1 write output from cache");
+			break;
 		case 200:
-			Log.debug("HTTP success 200 - OK");
+			Log.info("HTTP success 200 - OK");
 			break;
 		case 403:
-			Log.debug("HTTP error 403 - Forbidden");
+			Log.info("HTTP error 403 - Forbidden");
 			break;
 		case 404:
-			Log.debug("HTTP error 404 - Not Found");
+			Log.info("HTTP error 404 - Not Found");
 			break;
 		default:
 			Log.fatal("Invalid http status code: " + this.httpStatusCode);
 			break;
 		}
 
-		// XXX Log.debug("ContextType: " + getContentType(requestResource));
-
 		// generate and append the response
 		try {
-			if (HttpCache.getInstance().contains(requestResource)) {
-
-			}
-
 			File bodyFile = generateBody(outputStream, requestResource);
 			byte[] body = getByteArray(bodyFile);
 
@@ -72,8 +89,14 @@ class HttpWriter {
 			long size = body.length > bodyFile.length() ? body.length
 					: bodyFile.length();
 
-			String header = generateHeader(size, requestResource);
-			outputStream.write(getByteArray(header));
+			byte[] header = getByteArray(generateHeader(size, requestResource));
+
+			if (isInterpretedFile(requestResource) == null) {
+				// FIXME [sne] double check!
+				HttpCache.getInstance().put(requestResource, header, body);
+			}
+
+			outputStream.write(header);
 			outputStream.write(body);
 		} catch (final IOException ex) {
 			Log.error("Can not write response / output stream! ", ex);
@@ -82,12 +105,27 @@ class HttpWriter {
 		}
 	}
 
+	/**
+	 * Internal help method, which convert a string (utf-8) into a byte array.
+	 * 
+	 * @param string
+	 * @return byte[]
+	 * @throws UnsupportedEncodingException
+	 */
 	private byte[] getByteArray(String string)
 			throws UnsupportedEncodingException {
 
 		return new String(string.getBytes(), "UTF-8").getBytes();
 	}
 
+	/**
+	 * Internal help method, which convert a file into a byte array.
+	 * 
+	 * @param file
+	 * @return byte[]
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
+	 */
 	private byte[] getByteArray(File file) throws IOException,
 			UnsupportedEncodingException {
 
@@ -104,6 +142,12 @@ class HttpWriter {
 		return data;
 	}
 
+	/**
+	 * Internal help method, which check is the given file a script file.
+	 * 
+	 * @param file
+	 * @return {@link ScriptLanguage} is supported or null
+	 */
 	private ScriptLanguage isInterpretedFile(File file) {
 
 		for (ScriptLanguage scriptLanguage : WebServer.supportedScriptLanguages) {
@@ -116,7 +160,7 @@ class HttpWriter {
 	}
 
 	/**
-	 * Internal help method which generates the http header.
+	 * Internal help method, which generates the http header.
 	 * 
 	 * @param body
 	 * @param requestResource
@@ -124,6 +168,7 @@ class HttpWriter {
 	 */
 	private String generateHeader(long bodyLength, File requestResource) {
 
+		// TODO [dsc]
 		String header = new String("HTTP/1.1 ");
 
 		switch (this.httpStatusCode) {
@@ -152,7 +197,7 @@ class HttpWriter {
 
 			break;
 		}
-		header = header + "Content-Length: " + bodyLength;
+		header += "Content-Length: " + bodyLength;
 
 		// add empty line
 		header = header + LINE_BREAK + LINE_BREAK;
@@ -161,7 +206,7 @@ class HttpWriter {
 	}
 
 	/**
-	 * Internal help method which generates the http body.
+	 * Internal help method, which generates the http body.
 	 * 
 	 * @param outputStream
 	 * @param requestResource
@@ -176,107 +221,18 @@ class HttpWriter {
 
 		switch (this.httpStatusCode) {
 		case 200:
-
 			if (requestResource.isFile()) {
-
-				// return the file (direct)
-				// if (getContentType(requestResource).startsWith("image")) {
-				// try {
-				//
-				// // XXX TEST
-				// if (HttpCache.getInstance().contains(
-				// "" + requestResource.hashCode())) {
-				//
-				// byte[] buffer = new byte[1024];
-				// int bytes = 0;
-				// try {
-				// FileInputStream fis = new FileInputStream(
-				// requestResource);
-				// while ((bytes = fis.read(buffer)) != -1) {
-				// outputStream.write(buffer, 0, bytes);
-				// }
-				// } catch (final Exception ex) {
-				// Log.error("Can not read file.", ex);
-				// }
-				// } else {
-				// // add to cache
-				// List<Integer> tempList = new ArrayList<Integer>();
-				// byte[] buffer = new byte[1024];
-				// int bytes = 0;
-				// try {
-				// FileInputStream fis = new FileInputStream(
-				// requestResource);
-				// while ((bytes = fis.read(buffer)) != -1) {
-				// tempList.add(bytes);
-				// }
-				// } catch (final Exception ex) {
-				// Log.error("Can not read file.", ex);
-				// }
-				//
-				// int[] intArray = new int[tempList.size()];
-				// int i = 0;
-				// for (Integer e : tempList) {
-				// intArray[i++] = e.intValue();
-				// }
-				//
-				// HttpCache.getInstance().put(
-				// "" + requestResource.hashCode(), intArray);
-				// }
-				// // XXX TEST
-				//
-				// sendBytes(new FileInputStream(requestResource),
-				// outputStream);
-				// } catch (final FileNotFoundException ex) {
-				// ex.printStackTrace();
-				// }
-				// } else {
-				// // handle script files
-				// for (ScriptLanguage scriptLanguage :
-				// WebServer.supportedScriptLanguages) {
-				// if (requestResource.getName().toLowerCase()
-				// .endsWith(scriptLanguage.getFileExtension())) {
-				// return new ScriptExecutor().execute(scriptLanguage,
-				// requestResource);
-				// }
-				// }
-				// // read the file and return it
-				// BufferedReader bufferedReader = null;
-				// try {
-				// bufferedReader = new BufferedReader(
-				// new InputStreamReader(new FileInputStream(
-				// requestResource)));
-				// String strLine;
-				// while ((strLine = bufferedReader.readLine()) != null) {
-				// body += strLine;
-				// }
-				// bufferedReader.close();
-				// } catch (final IOException ex) {
-				// Log.error("Can not read file.", ex);
-				// } finally {
-				// if (bufferedReader != null) {
-				// try {
-				// bufferedReader.close();
-				// } catch (final IOException ex) {
-				// Log.error(
-				// "Can not close the request resource file.",
-				// ex);
-				// }
-				// }
-				// }
-				// }
 				tempFile = requestResource;
 			} else if (requestResource.isDirectory()
 					&& requestResource.canRead()) {
 
 				tempFile = File.createTempFile("directorylisting", ".html");
 				tempFile.deleteOnExit();
-
 				// for (File file : requestResource.listFiles())
 				// Configuration.getConfig().getDirectoryIndex().contains("")
 				// getByteArray(file)
 				// TODO [dsc] check existing dir index's
-
-				// TODO [dsc] please generate the directory listing in a separate
+				// TODO [dsc] please generate the dir listing in a separate
 				// method
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
@@ -335,7 +291,7 @@ class HttpWriter {
 	}
 
 	/**
-	 * Help method which finds the content type of the request resource file.
+	 * Help method, which finds the content type of the request resource file.
 	 * 
 	 * @param requestResource
 	 * @return content type
@@ -359,10 +315,15 @@ class HttpWriter {
 		} catch (final IOException ex) {
 			Log.warn(ex.getMessage());
 		}
-		// unknown content type - browser handles it
+		// unknown content type - browser handle it
 		return "application/octet-stream";
 	}
 
+	/**
+	 * Getter which return the current http status code.
+	 * 
+	 * @return http status code
+	 */
 	protected int getHttpCode() {
 		return this.httpStatusCode;
 	}
