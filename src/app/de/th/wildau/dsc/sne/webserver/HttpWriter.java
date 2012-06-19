@@ -124,7 +124,6 @@ class HttpWriter {
 	 */
 	private String generateHeader(long bodyLength, File requestResource) {
 
-		// TODO [dsc]
 		String header = new String("HTTP/1.1 ");
 
 		switch (this.httpStatusCode) {
@@ -153,7 +152,7 @@ class HttpWriter {
 
 			break;
 		}
-		header += "Content-Length: " + bodyLength;
+		header = header + "Content-Length: " + bodyLength;
 
 		// add empty line
 		header = header + LINE_BREAK + LINE_BREAK;
@@ -277,7 +276,7 @@ class HttpWriter {
 				// getByteArray(file)
 				// TODO [dsc] check existing dir index's
 
-				// TODO [dsc] please generate the dir listing in a separate
+				// TODO [dsc] please generate the directory listing in a separate
 				// method
 				PrintWriter tempFilePrintWriter = new PrintWriter(
 						new BufferedWriter(new FileWriter(tempFile)));
