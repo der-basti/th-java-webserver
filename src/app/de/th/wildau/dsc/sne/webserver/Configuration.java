@@ -7,7 +7,7 @@ import java.io.InputStream;
 import javax.xml.bind.JAXB;
 
 /**
- * WebServer Configuration Singelton.
+ * WebServer Configuration Singleton.
  * 
  * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
@@ -67,9 +67,9 @@ final class Configuration {
 	}
 
 	/**
-	 * TODO javadoc
+	 * Getter for the ConfigurationFile
 	 * 
-	 * @return
+	 * @return {@link ConfigurationFile}
 	 */
 	protected static final ConfigurationFile getConfig() {
 		return getInstance().configFile;

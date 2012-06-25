@@ -53,10 +53,10 @@ TH-Wildau - Betriebssysteme - Belegarbeit
 =============================================================================
 ==== 2. ADDITIONAL FEATURES
 =============================================================================
-[ok]- server configuration file (as singelton)
+[ok]- server configuration file (as singleton)
 [ok]- adjustable server configuration file (cmd/cli)
 [ok]- support other files (gifs, jpgs, pngs, pdfs, …)
-[ok]- log as singelton
+[ok]- log as singleton
 [ok]- log - log levels
 [ok]- implement a cache
 [ok]- execute php, perl, ruby, python, ...

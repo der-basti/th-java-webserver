@@ -53,8 +53,8 @@ public class HttpHandler implements Runnable {
 	}
 
 	/**
-	 * Internal help method, which process the request (read client request and
-	 * generate on this the response).
+	 * Internal help method which processes the request (read client request and
+	 * generate the response).
 	 * 
 	 * @param input
 	 * @param output
@@ -72,6 +72,7 @@ public class HttpHandler implements Runnable {
 				request = request + line;
 				// support GET ... HTTP 1.0 & 1.1 requests
 				if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", line)) {
+					Log.info(line.split(" ")[1]);
 					requestResource = new File(Configuration.getConfig()
 							.getWebRoot() + line.split(" ")[1]);
 				} else if (Pattern.matches("^POST /*.*", line)) {
@@ -86,7 +87,7 @@ public class HttpHandler implements Runnable {
 			HttpWriter httpWriter = null;
 
 			// check cache
-			if (HttpCache.getInstance().constrains(requestResource)) {
+			if (HttpCache.getInstance().contains(requestResource)) {
 				Log.debug("use http cache");
 				new HttpWriter(output, HttpCache.getInstance().getValue(
 						requestResource));

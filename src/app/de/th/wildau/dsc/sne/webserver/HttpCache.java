@@ -6,8 +6,10 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.print.DocFlavor.BYTE_ARRAY;
+
 /**
- * Http cache (Singleton).
+ * HttpCache (Singleton).
  * 
  * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
@@ -20,7 +22,7 @@ public class HttpCache {
 	private Map<String, byte[]> cache;
 
 	/**
-	 * Hidden constructor. Http cache is a singelton.
+	 * Hidden constructor. HttpCache is a Singleton.
 	 * 
 	 * @param cacheSize
 	 *            element size
@@ -35,7 +37,7 @@ public class HttpCache {
 	}
 
 	/**
-	 * Use default constructor. Cache 25 elements.
+	 * Use default constructor. Caches 25 elements.
 	 */
 	private HttpCache() {
 
@@ -45,7 +47,7 @@ public class HttpCache {
 	/**
 	 * Singleton call point.
 	 * 
-	 * @return
+	 * @return {@link HttpCache}
 	 */
 	public static synchronized final HttpCache getInstance() {
 
@@ -55,10 +57,18 @@ public class HttpCache {
 		return INSTANCE;
 	}
 
+	
 	public byte[] getValue(File resource) {
 		return INSTANCE.cache.get(resource.toString());
 	}
 
+	/**
+	 * 
+	 * 
+	 * @param resource
+	 * @param header
+	 * @param body
+	 */
 	public void put(File resource, byte[] header, byte[] body) {
 
 		if (isInterpretedFile(resource)) {
@@ -97,7 +107,7 @@ public class HttpCache {
 		INSTANCE.cache.put(resource.toString(), content);
 	}
 
-	public boolean constrains(File resource) {
+	public boolean contains(File resource) {
 		return INSTANCE.cache.containsKey(resource.toString());
 	}
 }
