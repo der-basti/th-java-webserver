@@ -89,8 +89,9 @@ public class WebServer {
 					workerQueue);
 			threadPool.prestartAllCoreThreads();
 
+			Socket socket = null;
 			while (true) {
-				Socket socket;
+
 				try {
 					socket = server.accept();
 					Log.info(socket.getInetAddress().getHostName()
@@ -101,9 +102,10 @@ public class WebServer {
 					Log.error("Connection failed!", ex);
 				} catch (final RejectedExecutionException ex) {
 					// http://stackoverflow.com/questions/1519725/why-does-executors-newcachedthreadpool-throw-java-util-concurrent-rejectedexecut
-					Log.fatal(
-							"java.util.concurrent.RejectedExecutionException",
-							ex);
+					// http://www.javamex.com/tutorials/threads/thread_pools_queues.shtml
+					// http://stackoverflow.com/questions/2001086/how-to-make-threadpoolexecutors-submit-method-block-if-it-is-saturated
+					Log.error("RejectedExecutionException", ex);
+					socket.close();
 				} catch (final Exception ex) {
 					Log.fatal("Unknown error!", ex);
 				}
