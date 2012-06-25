@@ -1,9 +1,7 @@
 server.conf
-javadoc/*
-*.class
+/javadoc
 [Bb]in
 
 #OS junk files
 [Tt]humbs.db
 *.DS_Store
-/javadoc

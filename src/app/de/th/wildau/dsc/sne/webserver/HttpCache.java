@@ -6,8 +6,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.print.DocFlavor.BYTE_ARRAY;
-
 /**
  * HttpCache (Singleton).
  * 
