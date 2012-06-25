@@ -9,7 +9,7 @@ import javax.xml.bind.JAXB;
 /**
  * WebServer Configuration Singelton.
  * 
- * @author dsc and sne
+ * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 final class Configuration {
 

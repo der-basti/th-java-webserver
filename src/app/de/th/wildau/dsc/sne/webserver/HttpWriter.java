@@ -12,9 +12,10 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 /**
- * The HttpWriter generates and writes the http response (header and body) in the
- * output stream.
+ * The HttpWriter generates and writes the http response (header and body) in
+ * the output stream.
  * 
+ * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpWriter {
 
@@ -246,49 +247,44 @@ public class HttpWriter {
 		return tempFile;
 	}
 
-	private File createDirectoryListing(File requestResource) throws IOException {
+	private File createDirectoryListing(File requestResource)
+			throws IOException {
 		File tempFile = File.createTempFile("directorylisting", ".html");
 		tempFile.deleteOnExit();
-		
+
 		for (File file : requestResource.listFiles()) {
-			for (String item: Configuration.getConfig().getDirectoryIndex()) {
+			for (String item : Configuration.getConfig().getDirectoryIndex()) {
 				if (file.getName().equals(item)) {
 					return file;
 				}
 			}
 		}
-		
-		PrintWriter tempFilePrintWriter = new PrintWriter(
-				new BufferedWriter(new FileWriter(tempFile)));
+
+		PrintWriter tempFilePrintWriter = new PrintWriter(new BufferedWriter(
+				new FileWriter(tempFile)));
 		String style = "<style>"
 				+ "ul li:nth-child(2n) {background-color:#E6E6E6;} "
-				+ "li {list-style:none;}"
-				+ "a:visited {color:#0000FF;}"
+				+ "li {list-style:none;}" + "a:visited {color:#0000FF;}"
 				+ "body {margin:0; padding-top:15px;}" + "</style>";
 
-		tempFilePrintWriter.print("<html><head>" + style
-				+ "</head><body><ul>");
+		tempFilePrintWriter.print("<html><head>" + style + "</head><body><ul>");
 		// show directory info
 		tempFilePrintWriter.print("<h1>Directory: "
 				+ requestResource.toString().replaceFirst(
-						Configuration.getConfig().getWebRoot(), "")
-				+ "</h1>");
+						Configuration.getConfig().getWebRoot(), "") + "</h1>");
 		// add parent link
 		if (!Configuration.getConfig().getWebRoot()
 				.startsWith(requestResource.getAbsolutePath())) {
-			tempFilePrintWriter
-					.print("<li><a href=\"..\">/..</a></li>");
+			tempFilePrintWriter.print("<li><a href=\"..\">/..</a></li>");
 		}
 		// file listing
 		for (File file : requestResource.listFiles(new HiddenFilter())) {
 			if (file.isDirectory()) {
-				tempFilePrintWriter.print("<li><a href=\""
-						+ file.getName() + "/\">" + file.getName()
-						+ "</a></li>");
+				tempFilePrintWriter.print("<li><a href=\"" + file.getName()
+						+ "/\">" + file.getName() + "</a></li>");
 			} else if (file.isFile()) {
-				tempFilePrintWriter.print("<li><a href=\""
-						+ file.getName() + "\">" + file.getName()
-						+ "</a></li>");
+				tempFilePrintWriter.print("<li><a href=\"" + file.getName()
+						+ "\">" + file.getName() + "</a></li>");
 			}
 		}
 		tempFilePrintWriter.print("</ul></body></html>");
@@ -296,7 +292,6 @@ public class HttpWriter {
 		tempFilePrintWriter.close();
 		return tempFile;
 	}
-		
 
 	/**
 	 * Help method which finds the content type of the requestResource file.

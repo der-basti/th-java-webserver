@@ -16,8 +16,7 @@ import java.util.regex.Pattern;
  * 
  * Handle the given request and generate an appropriate response.
  * 
- * @author sne
- * 
+ * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpHandler implements Runnable {
 

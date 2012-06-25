@@ -4,8 +4,7 @@ package de.th.wildau.dsc.sne.webserver;
  * The LogLevel enum defines a set of 'standard' logging levels that can be used
  * to control logging output.
  * 
- * @author sne
- * 
+ * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public enum LogLevel {
 

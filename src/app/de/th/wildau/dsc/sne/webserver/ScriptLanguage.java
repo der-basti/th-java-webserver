@@ -3,8 +3,7 @@ package de.th.wildau.dsc.sne.webserver;
 /**
  * Enumeration of possible supported script languages.
  * 
- * @author sne
- * 
+ * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public enum ScriptLanguage {
 

@@ -9,8 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Http cache (Singleton).
  * 
- * @author sne
- * 
+ * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpCache {
 
