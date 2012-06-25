@@ -25,7 +25,7 @@ public class Log {
 	private static String logPattern = "HH:mm:ss:SSS";
 
 	/**
-	 * Hidden constructor. Log is a singleton.
+	 * Hidden constructor. Log is a Singleton.
 	 * 
 	 * @param calendar
 	 * @param logDir

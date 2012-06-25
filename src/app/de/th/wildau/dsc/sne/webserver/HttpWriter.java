@@ -12,15 +12,13 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 /**
- * The HttpWriter generates and writes the http response (header and body) in
+ * The HttpWriter generates and writes the http response (header and body) into
  * the output stream.
  * 
  * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpWriter {
 
-	// XXX [dsc] check win, lin, mac default line separator
-	// return System.getProperty("line.separator");
 	private static final String LINE_BREAK = "\r\n";
 
 	private final int httpStatusCode;
@@ -35,7 +33,6 @@ public class HttpWriter {
 	 */
 	protected HttpWriter(OutputStream outputStream, byte[] direct) {
 
-		//
 		this.httpStatusCode = -1;
 
 		try {
@@ -81,7 +78,6 @@ public class HttpWriter {
 			break;
 		}
 
-		// generate and append the response
 		try {
 			File bodyFile = generateBody(outputStream, requestResource);
 			byte[] body = getByteArray(bodyFile);
@@ -93,7 +89,7 @@ public class HttpWriter {
 			byte[] header = getByteArray(generateHeader(size, requestResource));
 
 			if (isInterpretedFile(requestResource) == null) {
-				// FIXME [sne] double check!
+				// XXX [sne] double check!
 				HttpCache.getInstance().put(requestResource, header, body);
 			}
 
@@ -107,7 +103,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method which converts a string (utf-8) into a byte array.
+	 * Internal help method which converts a string (UTF-8) into a byte array.
 	 * 
 	 * @param string
 	 * @return byte[]
@@ -144,7 +140,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * Internal help method which checks if the given file a script file.
+	 * Internal help method which checks if the given file is a script file.
 	 * 
 	 * @param file
 	 * @return {@link ScriptLanguage} is supported or null
@@ -174,31 +170,31 @@ public class HttpWriter {
 
 		switch (this.httpStatusCode) {
 		case 200:
-			header += "200 OK" + LINE_BREAK;
-			if (!requestResource.isDirectory()) {
-				header = header + "Content-Type: "
-						+ getContentType(requestResource) + "; charset=utf-8"
-						+ LINE_BREAK;
-			} else {
-				header = header + "Content-Type: text/html; charset=utf-8"
-						+ LINE_BREAK;
-			}
+			header = header + "200 OK" + LINE_BREAK;
 			break;
 		case 403:
-			header = header + "403 Forbidden" + LINE_BREAK
-					+ "Content-Type: text/html; charset=utf-8" + LINE_BREAK;
+			header = header + "403 Forbidden" + LINE_BREAK;
 			break;
 		case 404:
-			header = header + "404 File Not Found" + LINE_BREAK
-					+ "Content-Type: text/html; charset=utf-8" + LINE_BREAK;
+			header = header + "404 File Not Found" + LINE_BREAK;
 			break;
 		default:
-			header = header + "500 Internal Server Error" + LINE_BREAK
-					+ "Content-Type: text/html; charset=utf-8" + LINE_BREAK;
+			header = header + "500 Internal Server Error" + LINE_BREAK;
 
 			break;
 		}
-		header += "Content-Length: " + bodyLength;
+		header = header + "Server: " + Configuration.getConfig().getServerName() + LINE_BREAK;
+		header = header + "Content-Length: " + bodyLength + LINE_BREAK;
+		header = header + "Content-Language: de" + LINE_BREAK;
+		header = header + "Connection: close" + LINE_BREAK;
+		if (this.httpStatusCode == 200 && !requestResource.isDirectory()) {
+			header = header + "Content-Type: "
+					+ getContentType(requestResource) + "; charset=utf-8"
+					+ LINE_BREAK;
+		} else {
+			header = header + "Content-Type: text/html; charset=utf-8"
+					+ LINE_BREAK;
+		}
 
 		// add empty line
 		header = header + LINE_BREAK + LINE_BREAK;
@@ -247,6 +243,14 @@ public class HttpWriter {
 		return tempFile;
 	}
 
+	/**
+	 * Internal help method which creates the directory listing.
+	 * 
+	 * @param requestResource
+	 * @return File
+	 * @throws IOException
+	 */
+	
 	private File createDirectoryListing(File requestResource)
 			throws IOException {
 		File tempFile = File.createTempFile("directorylisting", ".html");

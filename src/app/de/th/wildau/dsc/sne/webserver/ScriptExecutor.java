@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The script executer is a class which interpret script file over the cmd/cli.
+ * The script executer is a class which interprets script file over the cmd/cli.
  * 
  * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
@@ -73,7 +73,7 @@ public class ScriptExecutor {
 	}
 
 	/**
-	 * This method try to execute a file with the given {@link ScriptLanguage}.
+	 * This method tries to execute a file with the given {@link ScriptLanguage}.
 	 * 
 	 * @param command
 	 *            to execute
@@ -87,7 +87,7 @@ public class ScriptExecutor {
 	}
 
 	/**
-	 * Help method, which execute commands.
+	 * Help method which executes commands.
 	 */
 	private String execute(String command) {
 
