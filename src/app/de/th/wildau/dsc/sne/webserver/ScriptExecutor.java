@@ -10,8 +10,6 @@ import java.util.List;
 
 /**
  * The script executer is a class which interprets script file over the cmd/cli.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class ScriptExecutor {
 

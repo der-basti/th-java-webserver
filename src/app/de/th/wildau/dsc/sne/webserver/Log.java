@@ -11,8 +11,6 @@ import java.util.GregorianCalendar;
 
 /**
  * Log is used to log messages for a specific application component.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class Log {
 

@@ -14,8 +14,6 @@ import java.net.URISyntaxException;
 /**
  * The HttpWriter generates and writes the http response (header and body) into
  * the output stream.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpWriter {
 

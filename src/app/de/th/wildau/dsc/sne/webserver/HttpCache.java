@@ -8,8 +8,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * HttpCache (Singleton).
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpCache {
 
