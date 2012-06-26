@@ -53,7 +53,6 @@ public class HttpCache {
 		return INSTANCE;
 	}
 
-	
 	public byte[] getValue(File resource) {
 		return INSTANCE.cache.get(resource.toString());
 	}
@@ -69,6 +68,11 @@ public class HttpCache {
 
 		if (isInterpretedFile(resource)) {
 			Log.debug("Don't cache interpreted files.");
+			return;
+		}
+
+		if (body != null && body.length > 5000000) {
+			Log.debug("Don't cache files over 5 MB.");
 			return;
 		}
 
