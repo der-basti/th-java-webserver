@@ -75,6 +75,8 @@ public class HttpCache {
 			Log.debug("Don't cache files over 5 MB.");
 			return;
 		}
+		
+		// Java 7, as part of NIO.2 has added the WatchService API
 
 		byte[] content = new byte[header.length + body.length];
 		int headerLength = header.length;
