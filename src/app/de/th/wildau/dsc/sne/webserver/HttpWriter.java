@@ -80,7 +80,7 @@ public class HttpWriter {
 			File bodyFile = generateBody(outputStream, requestResource);
 			byte[] body = getByteArray(bodyFile);
 
-			// XXX issue, because interpreted files has a other size
+			// XXX issue, because interpreted files have different size
 			long size = body.length > bodyFile.length() ? body.length
 					: bodyFile.length();
 
@@ -184,7 +184,7 @@ public class HttpWriter {
 		header = header + "Connection: close" + LINE_BREAK;
 		if (this.httpStatusCode == 200 && !requestResource.isDirectory()) {
 			header = header + "Content-Type: "
-					+ getContentType(requestResource) + "; charset=utf-8"
+					+ getContentType(requestResource)  + "; charset=utf-8"
 					+ LINE_BREAK;
 		} else {
 			header = header + "Content-Type: text/html; charset=utf-8"
@@ -192,11 +192,11 @@ public class HttpWriter {
 		}
 
 		// add empty line
-		header = header + LINE_BREAK + LINE_BREAK;
+		header = header + LINE_BREAK;
 
 		return header;
 	}
-
+	
 	/**
 	 * Internal help method which generates the http body.
 	 * 

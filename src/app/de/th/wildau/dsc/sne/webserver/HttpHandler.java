@@ -104,9 +104,6 @@ public class HttpHandler implements Runnable {
 						+ requestResource.toString());
 
 				if (requestResource.canRead()) {
-
-					// TODO [dsc] exist a index file? > yes > show | or return
-					// list (links) of files
 					httpWriter = new HttpWriter(200);
 					httpWriter.write(output, requestResource);
 				} else {
@@ -125,7 +122,7 @@ public class HttpHandler implements Runnable {
 					httpWriter = new HttpWriter(200);
 					httpWriter.write(output, requestResource);
 				} else {
-					Log.warn("request resource is a file, but can not handle it.");
+					Log.warn("request resource is a file but  can not handle it.");
 					httpWriter = new HttpWriter(500);
 					httpWriter.write(output, requestResource);
 				}
@@ -148,7 +145,7 @@ public class HttpHandler implements Runnable {
 		try {
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(),
 					true);
-			// check is output socket closed / has errors
+			// check if output socket is closed / has errors
 			if (out.checkError()) {
 				this.socket.getOutputStream().close();
 			}
