@@ -8,8 +8,6 @@ import javax.xml.bind.JAXB;
 
 /**
  * WebServer Configuration Singleton.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 final class Configuration {
 

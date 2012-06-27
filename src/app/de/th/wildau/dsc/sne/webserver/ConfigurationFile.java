@@ -14,8 +14,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  * JAXB file for the server configuration.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "server-node")

@@ -1,6 +1,7 @@
 server.conf
-/javadoc
-[Bb]in
+webserver.jar
+/bin
+/dist
 
 #OS junk files
 [Tt]humbs.db

@@ -22,8 +22,6 @@ import org.apache.commons.cli.PosixParser;
 
 /**
  * This is the main web server class. License creative commons (cc) by-nc-sa.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class WebServer {
 

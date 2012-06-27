@@ -4,8 +4,6 @@ import java.io.File;
 
 /**
  * This file filter doesn't accept file names which start with '.' and hidden files.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HiddenFilter implements java.io.FileFilter {
 

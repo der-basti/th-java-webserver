@@ -14,8 +14,6 @@ import java.net.URISyntaxException;
 /**
  * The HttpWriter generates and writes the http response (header and body) into
  * the output stream.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpWriter {
 
@@ -82,16 +80,13 @@ public class HttpWriter {
 			File bodyFile = generateBody(outputStream, requestResource);
 			byte[] body = getByteArray(bodyFile);
 
-			// XXX [sne] check length
+			// XXX issue, because interpreted files has a other size
 			long size = body.length > bodyFile.length() ? body.length
 					: bodyFile.length();
 
 			byte[] header = getByteArray(generateHeader(size, requestResource));
 
-			if (isInterpretedFile(requestResource) == null) {
-				// XXX [sne] double check!
-				HttpCache.getInstance().put(requestResource, header, body);
-			}
+			HttpCache.getInstance().put(requestResource, header, body);
 
 			outputStream.write(header);
 			outputStream.write(body);

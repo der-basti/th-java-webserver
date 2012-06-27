@@ -14,9 +14,7 @@ import java.util.regex.Pattern;
  * A handler which is invoked to process HTTP exchanges. Each HTTP exchange is
  * handled by one of these handlers.
  * 
- * It handles the given request and generates an appropriate response.
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
+ *  Handle the given request and generate an appropriate response.
  */
 public class HttpHandler implements Runnable {
 

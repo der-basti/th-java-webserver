@@ -8,8 +8,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * HttpCache (Singleton).
- * 
- * @author David Schwertfeger [dsc] & Sebastian Nemak [sne]
  */
 public class HttpCache {
 
@@ -55,7 +53,6 @@ public class HttpCache {
 		return INSTANCE;
 	}
 
-	
 	public byte[] getValue(File resource) {
 		return INSTANCE.cache.get(resource.toString());
 	}
@@ -73,6 +70,13 @@ public class HttpCache {
 			Log.debug("Don't cache interpreted files.");
 			return;
 		}
+
+		if (body != null && body.length > 5000000) {
+			Log.debug("Don't cache files over 5 MB.");
+			return;
+		}
+		
+		// Java 7, as part of NIO.2 has added the WatchService API
 
 		byte[] content = new byte[header.length + body.length];
 		int headerLength = header.length;
