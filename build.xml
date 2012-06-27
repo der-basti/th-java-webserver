@@ -7,7 +7,10 @@
 	<target name="prepare">
 		<delete dir="${dist.name}"/>
 		<mkdir dir="${dist.name}"/>
-		<copy file="src/app/de/th/wildau/dsc/sne/webserver/server.conf.default" tofile="${dist.name}/server.conf"/>
+		<copy file="server.conf.default" tofile="${dist.name}/server.conf"/>
+		<copy todir="${dist.name}/errorPages">
+		    <fileset dir="errorPages"/>
+		  </copy>
 		<ant antfile="javadoc.xml" target="javadoc"/>
 	</target>
     

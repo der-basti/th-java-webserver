@@ -1,8 +1,6 @@
 package de.th.wildau.dsc.sne.webserver;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +48,12 @@ final class Configuration {
 			configFile.setServerName("Webserver by dsc and sne");
 			configFile.setServerPort(1337);
 			configFile.setWebRoot(System.getProperty("user.home"));
+			configFile.setErrorPage403(System.getProperty("user.home")
+					+ System.getProperty("file.separator") + "403.html");
+			configFile.setErrorPage404(System.getProperty("user.home")
+					+ System.getProperty("file.separator") + "404.html");
+			// configFile.setErrorPage500(System.getProperty("user.home")
+			// + System.getProperty("file.separator") + "500.html");
 
 			INSTANCE = new Configuration(configFile);
 		}

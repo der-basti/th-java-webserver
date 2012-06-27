@@ -33,14 +33,12 @@ public class ConfigurationFile implements Cloneable {
 	private String proxyHost;
 	@XmlElement(name = "proxy-port", required = false)
 	private int proxyPort;
-	@XmlElement(name = "error-page-404", required = false)
-	private int errorPage404;
 	@XmlElement(name = "error-page-403", required = false)
-	private int errorPage403;
+	private String errorPage403;
+	@XmlElement(name = "error-page-404", required = false)
+	private String errorPage404;
 	@XmlElement(name = "error-page-500", required = false)
-	private int errorPage500;
-	// XXX http status pages
-	// XXX gzip
+	private String errorPage500;
 	@XmlElementWrapper(name = "directory-index", required = false)
 	@XmlElement(name = "item")
 	private List<String> directoryIndex = new ArrayList<String>();
@@ -56,6 +54,9 @@ public class ConfigurationFile implements Cloneable {
 		configurationFile.setProxyHost(this.proxyHost);
 		configurationFile.setLogRoot(this.logRoot);
 		configurationFile.setLogLevel(this.logLevel);
+		configurationFile.setErrorPage403(this.errorPage403);
+		configurationFile.setErrorPage404(this.errorPage404);
+		configurationFile.setErrorPage500(this.errorPage500);
 		configurationFile.setDirectoryIndex(Collections
 				.unmodifiableList(this.directoryIndex));
 		return configurationFile;
@@ -72,6 +73,9 @@ public class ConfigurationFile implements Cloneable {
 		sb.append(" log-level:").append(this.logLevel);
 		sb.append(" proxy-host:").append(this.proxyHost);
 		sb.append(" proxy-port:").append(this.proxyPort);
+		sb.append(" error-page-403:").append(this.errorPage403);
+		sb.append(" error-page-404:").append(this.errorPage404);
+		sb.append(" error-page-500:").append(this.errorPage500);
 		sb.append(" directory-index:").append(
 				Arrays.toString(this.directoryIndex.toArray()));
 		return sb.append("]").toString();
@@ -130,7 +134,7 @@ public class ConfigurationFile implements Cloneable {
 	}
 
 	public final String getProxyHost() {
-		return proxyHost;
+		return this.proxyHost;
 	}
 
 	public void setProxyHost(String proxyHost) {
@@ -138,34 +142,34 @@ public class ConfigurationFile implements Cloneable {
 	}
 
 	public int getProxyPort() {
-		return proxyPort;
+		return this.proxyPort;
 	}
 
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
 	}
 
-	public int getErrorPage404() {
-		return errorPage404;
+	public String getErrorPage403() {
+		return this.errorPage403;
 	}
 
-	public int getErrorPage403() {
-		return errorPage403;
+	public String getErrorPage404() {
+		return this.errorPage404;
 	}
 
-	public int getErrorPage500() {
-		return errorPage500;
+	public String getErrorPage500() {
+		return this.errorPage500;
 	}
 
-	public void setErrorPage404(int errorPage404) {
-		this.errorPage404 = errorPage404;
-	}
-
-	public void setErrorPage403(int errorPage403) {
+	public void setErrorPage403(String errorPage403) {
 		this.errorPage403 = errorPage403;
 	}
 
-	public void setErrorPage500(int errorPage500) {
+	public void setErrorPage404(String errorPage404) {
+		this.errorPage404 = errorPage404;
+	}
+
+	public void setErrorPage500(String errorPage500) {
 		this.errorPage500 = errorPage500;
 	}
 

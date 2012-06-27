@@ -2,11 +2,14 @@
 <servernode>
 	<server-name>WebServer by dsc and sne</server-name>
 	<server-port>1337</server-port>
-	<web-root>/</web-root>
-	<log-root>/</log-root>
+	<web-root>/PATH-TO-DIR/demoPages</web-root>
+	<log-root>/PATH-TO-DIR/log</log-root>
 	<log-level>info</log-level>
-	<proxy-host>proxy.th-wildau.de</proxy-host>
-	<proxy-port>8080</proxy-port>
+	<!--proxy-host>proxy.th-wildau.de</proxy-host>
+	<proxy-port>8080</proxy-port-->
+	<error-page-403>/PATH-TO-DIR/errorPages/403.html</error-page-403>
+	<error-page-404>/PATH-TO-DIR/errorPages/404.html</error-page-404>
+	<error-page-500>/PATH-TO-DIR/errorPages/500.html</error-page-500>
 	<directory-index>
 		<item>index.html</item>
 		<item>index.htm</item>

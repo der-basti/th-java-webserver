@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * A handler which is invoked to process HTTP exchanges. Each HTTP exchange is
  * handled by one of these handlers.
  * 
- *  It handles the given request and generates an appropriate response.
+ * It handles the given request and generates an appropriate response.
  */
 public class HttpHandler implements Runnable {
 
@@ -59,11 +59,10 @@ public class HttpHandler implements Runnable {
 	 */
 	private void processRequest(InputStream input, OutputStream output) {
 
+		File requestResource = null;
 		try {
 			BufferedReader bufferedReader = new BufferedReader(
 					new InputStreamReader(input));
-			File requestResource = null;
-
 			String line = "";
 			String request = "";
 			while (!(line = bufferedReader.readLine()).isEmpty()) {
@@ -82,56 +81,56 @@ public class HttpHandler implements Runnable {
 					+ "] " + request);
 
 			Log.info("request resource: " + requestResource.toString());
-			HttpWriter httpWriter = null;
-
-			// check cache
-			if (HttpCache.getInstance().contains(requestResource)) {
-				Log.debug("use http cache");
-				new HttpWriter(output, HttpCache.getInstance().getValue(
-						requestResource));
-				return;
-			}
-
-			// normal - handle the request
-			if (!requestResource.exists()) {
-				Log.debug("Request resource doesn't exists: "
-						+ requestResource.getPath());
-
-				httpWriter = new HttpWriter(404); //
-				httpWriter.write(output, requestResource);
-			} else if (requestResource.isDirectory()) {
-				Log.debug("Request resource is a directory: "
-						+ requestResource.toString());
-
-				if (requestResource.canRead()) {
-					httpWriter = new HttpWriter(200);
-					httpWriter.write(output, requestResource);
-				} else {
-					httpWriter = new HttpWriter(403);
-					httpWriter.write(output, requestResource);
-				}
-			} else if   (requestResource.isFile()) {
-				Log.debug("Request resource is a file: "
-						+ requestResource.toString());
-
-				if (requestResource.isHidden()) {
-					Log.warn("Can not deliver hidden files.");
-					httpWriter = new HttpWriter(404);
-					httpWriter.write(output, null);
-				} else if (requestResource.canRead()) {
-					httpWriter = new HttpWriter(200);
-					httpWriter.write(output, requestResource);
-				} else {
-					Log.warn("request resource is a file but  can not handle it.");
-					httpWriter = new HttpWriter(500);
-					httpWriter.write(output, requestResource);
-				}
-			}
 		} catch (final IOException ex) {
 			Log.error("Can not read request: " + ex.getMessage());
-		} catch (final Exception ex) {
-			// FIXME [sne] null point ex (get index.html)
-			Log.fatal("Catch all processRequest() exception!", ex);
+			return;
+		}
+
+		HttpWriter httpWriter = null;
+
+		// check cache
+		if (HttpCache.getInstance().contains(requestResource)) {
+			Log.debug("use http cache");
+			
+			new HttpWriter(output, HttpCache.getInstance().getValue(
+					requestResource));
+			return;
+		}
+
+		// normal - handle the request
+		if (!requestResource.exists()) {
+			Log.debug("Request resource doesn't exists: "
+					+ requestResource.getPath());
+
+			httpWriter = new HttpWriter(404); //
+			httpWriter.write(output, requestResource);
+		} else if (requestResource.isDirectory()) {
+			Log.debug("Request resource is a directory: "
+					+ requestResource.toString());
+
+			if (requestResource.canRead()) {
+				httpWriter = new HttpWriter(200);
+				httpWriter.write(output, requestResource);
+			} else {
+				httpWriter = new HttpWriter(403);
+				httpWriter.write(output, requestResource);
+			}
+		} else if (requestResource.isFile()) {
+			Log.debug("Request resource is a file: "
+					+ requestResource.toString());
+
+			if (requestResource.isHidden()) {
+				Log.warn("Can not deliver hidden files.");
+				httpWriter = new HttpWriter(404);
+				httpWriter.write(output, null);
+			} else if (requestResource.canRead()) {
+				httpWriter = new HttpWriter(200);
+				httpWriter.write(output, requestResource);
+			} else {
+				Log.warn("request resource is a file but  can not handle it.");
+				httpWriter = new HttpWriter(500);
+				httpWriter.write(output, requestResource);
+			}
 		}
 	}
 

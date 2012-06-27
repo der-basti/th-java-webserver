@@ -69,7 +69,10 @@ public class HttpWriter {
 			Log.info("HTTP error 403 - Forbidden");
 			break;
 		case 404:
-			Log.info("HTTP error 404 - Not Found");
+			Log.info("HTTP error 404 - Page Not Found");
+			break;
+		case 500:
+			Log.info("HTTP error 500 - Internal Server Error");
 			break;
 		default:
 			Log.fatal("Invalid http status code: " + this.httpStatusCode);
@@ -77,14 +80,19 @@ public class HttpWriter {
 		}
 
 		try {
-			File bodyFile = generateBody(outputStream, requestResource);
+			File bodyFile = generateBody(requestResource);
 			byte[] body = getByteArray(bodyFile);
 
-			// XXX issue, because interpreted files have different size
-			long size = body.length > bodyFile.length() ? body.length
-					: bodyFile.length();
+			long bodySize;
+			// output length of interpreted script / normal files are different
+			if (isInterpretedFile(requestResource) == null) {
+				bodySize = bodyFile.length();
+			} else {
+				bodySize = body.length;
+			}
 
-			byte[] header = getByteArray(generateHeader(size, requestResource));
+			byte[] header = getByteArray(generateHeader(bodySize,
+					requestResource));
 
 			HttpCache.getInstance().put(requestResource, header, body);
 
@@ -92,8 +100,29 @@ public class HttpWriter {
 			outputStream.write(body);
 		} catch (final IOException ex) {
 			Log.error("Can not write response / output stream! ", ex);
+			failOver(outputStream);
 		} catch (URISyntaxException e) {
 			Log.error("Can't read resource from JAR file.", e);
+			failOver(outputStream);
+		}
+	}
+
+	/**
+	 * Internal help method which create a 500 error page.
+	 * 
+	 * @param outputStream
+	 */
+	private void failOver(OutputStream outputStream) {
+
+		File tempFile = createHtmlFile("500",
+				"Error 500 - Internal Server Error",
+				"<h1>Error 500 - Internal Server Error</h1>");
+		String header = generateHeader(tempFile.length(), null);
+		try {
+			outputStream.write(getByteArray(header));
+			outputStream.write(getByteArray(tempFile));
+		} catch (final Exception ex) {
+			Log.fatal("The fail over failed.", ex);
 		}
 	}
 
@@ -160,7 +189,6 @@ public class HttpWriter {
 	 */
 	private String generateHeader(long bodyLength, File requestResource) {
 
-		// TODO [dsc]
 		String header = new String("HTTP/1.1 ");
 
 		switch (this.httpStatusCode) {
@@ -175,7 +203,6 @@ public class HttpWriter {
 			break;
 		default:
 			header = header + "500 Internal Server Error" + LINE_BREAK;
-
 			break;
 		}
 		header = header + "Server: "
@@ -183,9 +210,10 @@ public class HttpWriter {
 		header = header + "Content-Length: " + bodyLength + LINE_BREAK;
 		header = header + "Content-Language: de" + LINE_BREAK;
 		header = header + "Connection: close" + LINE_BREAK;
-		if (this.httpStatusCode == 200 && !requestResource.isDirectory()) {
+		if (this.httpStatusCode == 200 && requestResource != null
+				&& !requestResource.isDirectory()) {
 			header = header + "Content-Type: "
-					+ getContentType(requestResource)  + "; charset=utf-8"
+					+ getContentType(requestResource) + "; charset=utf-8"
 					+ LINE_BREAK;
 		} else {
 			header = header + "Content-Type: text/html; charset=utf-8"
@@ -197,18 +225,17 @@ public class HttpWriter {
 
 		return header;
 	}
-	
+
 	/**
 	 * Internal help method which generates the http body.
 	 * 
-	 * @param outputStream
 	 * @param requestResource
 	 * @return file
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 */
-	private File generateBody(OutputStream outputStream, File requestResource)
-			throws IOException, URISyntaxException {
+	private File generateBody(File requestResource) throws IOException,
+			URISyntaxException {
 
 		File tempFile = null;
 
@@ -222,8 +249,12 @@ public class HttpWriter {
 			}
 			break;
 		case 403:
-			tempFile = new File(WebServer.class.getClassLoader()
-					.getResource("403.html").toURI());
+			if (Configuration.getConfig().getErrorPage403() != null) {
+				tempFile = new File(Configuration.getConfig().getErrorPage403());
+			} else {
+				tempFile = createHtmlFile("403", "Error 403 - Forbidden",
+						"<h1>Error 403 - Forbidden</h1>");
+			}
 			break;
 		case 404:
 			// Thread.currentThread().getContextClassLoader().getResource("404.html").getFile();
@@ -231,15 +262,53 @@ public class HttpWriter {
 			// WebServer.class.getClassLoader().getResource("404.html").toURI();
 			// WebServer.class.getResourceAsStream("/404.html");
 			// WebServer.class.getClassLoader().getResourceAsStream("404.html");
+			if (Configuration.getConfig().getErrorPage404() != null) {
+				tempFile = new File(Configuration.getConfig().getErrorPage404());
+			} else {
+				tempFile = createHtmlFile("404", "Error 404 - File Not Found",
+						"<h1>Error 404 - File Not Found</h1>");
+			}
 			break;
 		case 500:
-			tempFile = new File(WebServer.class.getClassLoader()
-					.getResource("500.html").toURI());
+			if (Configuration.getConfig().getErrorPage403() != null) {
+				tempFile = new File(Configuration.getConfig().getErrorPage403());
+			} else {
+				throw new IllegalStateException("Missing error page 500.");
+			}
 			break;
 		default:
 			throw new IllegalStateException("Invalid http status code.");
 		}
 		return tempFile;
+	}
+
+	/**
+	 * Internal help method which creates a temporary html file.
+	 * 
+	 * @param fileName
+	 * @param title
+	 * @param body
+	 * @return temp file
+	 */
+	private File createHtmlFile(String fileName, String title, String body) {
+
+		try {
+			File tempFile = File.createTempFile(fileName, ".html");
+			tempFile.deleteOnExit();
+			PrintWriter tempFilePrintWriter = new PrintWriter(
+					new BufferedWriter(new FileWriter(tempFile)));
+			tempFilePrintWriter
+					.print("<html><head><meta charset=\"UTF-8\"><title>"
+							+ title + "</title></head><body>");
+			tempFilePrintWriter.print(body);
+			tempFilePrintWriter.print("</body></html>");
+			tempFilePrintWriter.flush();
+			tempFilePrintWriter.close();
+			return tempFile;
+		} catch (final IOException ex) {
+			Log.error("Can not create a temp file.", ex);
+			return null;
+		}
 	}
 
 	/**
@@ -249,7 +318,7 @@ public class HttpWriter {
 	 * @return File
 	 * @throws IOException
 	 */
-
+	// TODO [dsc] please use the createHtmlFile(...) method (^look^)
 	private File createDirectoryListing(File requestResource)
 			throws IOException {
 

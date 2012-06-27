@@ -1,4 +1,4 @@
-WebServer
+Webserver
 =========
 TH-Wildau - Betriebssysteme - Belegarbeit
 
@@ -26,7 +26,6 @@ TH-Wildau - Betriebssysteme - Belegarbeit
 =============================================================================
 1. MUST HAVE (FEATURES)
 2. ADDITIONAL FEATURES
-3. DOCUMENTATION
 
 =============================================================================
 ==== 1. MUST HAVE (FEATURES)
@@ -60,13 +59,4 @@ TH-Wildau - Betriebssysteme - Belegarbeit
 [ok]- log - log levels
 [ok]- implement a cache
 [ok]- execute php, perl, ruby, python, ...
-- log - zip old log files (automatic)
-- .htaccess
-- custom 404 page
-
-=============================================================================
-==== DOCUMENTATION
-=============================================================================
-See JavaDoc!
-
-=============================================================================
+[ok]- custom error pages

@@ -2,7 +2,6 @@ package de.th.wildau.dsc.sne.webserver;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
@@ -99,6 +98,7 @@ public class WebServer {
 				} catch (final IOException ex) {
 					Log.error("Connection failed!", ex);
 				} catch (final RejectedExecutionException ex) {
+					// XXX [sne] RejectedExecutionException
 					// http://stackoverflow.com/questions/1519725/why-does-executors-newcachedthreadpool-throw-java-util-concurrent-rejectedexecut
 					// http://www.javamex.com/tutorials/threads/thread_pools_queues.shtml
 					// http://stackoverflow.com/questions/2001086/how-to-make-threadpoolexecutors-submit-method-block-if-it-is-saturated
