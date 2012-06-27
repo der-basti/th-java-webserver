@@ -53,7 +53,7 @@ public class HttpWriter {
 	}
 
 	/**
-	 * This method writes the http response in the given output stream.
+	 * This method writes the http response into the given output stream.
 	 * 
 	 * @param outputStream
 	 * @param requestResource
