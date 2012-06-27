@@ -110,7 +110,7 @@ public class HttpHandler implements Runnable {
 					httpWriter = new HttpWriter(403);
 					httpWriter.write(output, requestResource);
 				}
-			} else if (requestResource.isFile()) {
+			} else if   (requestResource.isFile()) {
 				Log.debug("Request resource is a file: "
 						+ requestResource.toString());
 
@@ -126,8 +126,6 @@ public class HttpHandler implements Runnable {
 					httpWriter = new HttpWriter(500);
 					httpWriter.write(output, requestResource);
 				}
-			} else {
-				// TODO [dsc] [sne] whats here?
 			}
 		} catch (final IOException ex) {
 			Log.error("Can not read request: " + ex.getMessage());

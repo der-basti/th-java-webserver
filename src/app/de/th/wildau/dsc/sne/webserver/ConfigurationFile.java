@@ -33,6 +33,12 @@ public class ConfigurationFile implements Cloneable {
 	private String proxyHost;
 	@XmlElement(name = "proxy-port", required = false)
 	private int proxyPort;
+	@XmlElement(name = "error-page-404", required = false)
+	private int errorPage404;
+	@XmlElement(name = "error-page-403", required = false)
+	private int errorPage403;
+	@XmlElement(name = "error-page-500", required = false)
+	private int errorPage500;
 	// XXX http status pages
 	// XXX gzip
 	@XmlElementWrapper(name = "directory-index", required = false)
@@ -137,6 +143,30 @@ public class ConfigurationFile implements Cloneable {
 
 	public void setProxyPort(int proxyPort) {
 		this.proxyPort = proxyPort;
+	}
+
+	public int getErrorPage404() {
+		return errorPage404;
+	}
+
+	public int getErrorPage403() {
+		return errorPage403;
+	}
+
+	public int getErrorPage500() {
+		return errorPage500;
+	}
+
+	public void setErrorPage404(int errorPage404) {
+		this.errorPage404 = errorPage404;
+	}
+
+	public void setErrorPage403(int errorPage403) {
+		this.errorPage403 = errorPage403;
+	}
+
+	public void setErrorPage500(int errorPage500) {
+		this.errorPage500 = errorPage500;
 	}
 
 	public List<String> getDirectoryIndex() {
