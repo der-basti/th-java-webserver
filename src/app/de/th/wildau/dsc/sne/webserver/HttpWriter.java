@@ -178,7 +178,8 @@ public class HttpWriter {
 
 			break;
 		}
-		header = header + "Server: " + Configuration.getConfig().getServerName() + LINE_BREAK;
+		header = header + "Server: "
+				+ Configuration.getConfig().getServerName() + LINE_BREAK;
 		header = header + "Content-Length: " + bodyLength + LINE_BREAK;
 		header = header + "Content-Language: de" + LINE_BREAK;
 		header = header + "Connection: close" + LINE_BREAK;
@@ -225,8 +226,11 @@ public class HttpWriter {
 					.getResource("403.html").toURI());
 			break;
 		case 404:
-			tempFile = new File(WebServer.class.getClassLoader()
-					.getResource("404.html").toURI());
+			// Thread.currentThread().getContextClassLoader().getResource("404.html").getFile();
+			// ClassLoader.getSystemResource("404.html").getFile();
+			// WebServer.class.getClassLoader().getResource("404.html").toURI();
+			// WebServer.class.getResourceAsStream("/404.html");
+			// WebServer.class.getClassLoader().getResourceAsStream("404.html");
 			break;
 		case 500:
 			tempFile = new File(WebServer.class.getClassLoader()
@@ -245,9 +249,10 @@ public class HttpWriter {
 	 * @return File
 	 * @throws IOException
 	 */
-	
+
 	private File createDirectoryListing(File requestResource)
 			throws IOException {
+
 		File tempFile = File.createTempFile("directorylisting", ".html");
 		tempFile.deleteOnExit();
 

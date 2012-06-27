@@ -146,9 +146,9 @@ public class WebServer {
 				}
 			} else {
 				// load default configuration
-				InputStream is = WebServer.class
-						.getResourceAsStream("server.conf.default");
-				Configuration.createInstance(is);
+				Configuration.createInstance();
+				System.out.println("Load default config: "
+						+ Configuration.getConfig().toString());
 			}
 
 			Log.createInstance();

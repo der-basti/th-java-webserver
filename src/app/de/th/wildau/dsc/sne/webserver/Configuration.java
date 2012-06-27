@@ -3,6 +3,8 @@ package de.th.wildau.dsc.sne.webserver;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.bind.JAXB;
 
@@ -32,18 +34,24 @@ final class Configuration {
 		}
 	}
 
-	public static synchronized void createInstance(InputStream inputStream) {
+	public static synchronized void createInstance() {
 
 		if (INSTANCE == null) {
-			try {
-				File temp = File.createTempFile("server.conf", ".default");
-				temp.deleteOnExit();
-				createInstance(temp);
-			} catch (final IOException ex) {
-				throw new IllegalStateException(
-						"Can not load default configuration. "
-								+ ex.getMessage());
-			}
+			List<String> dirListing = new ArrayList<String>();
+			dirListing.add("index.html");
+			dirListing.add("index.htm");
+
+			ConfigurationFile configFile = new ConfigurationFile();
+			configFile.setDirectoryIndex(dirListing);
+			configFile.setLogLevel("info");
+			configFile.setLogRoot(System.getProperty("user.home"));
+			// configFile.setProxyHost(proxyHost);
+			// configFile.setProxyPort(proxyPort);
+			configFile.setServerName("Webserver by dsc and sne");
+			configFile.setServerPort(1337);
+			configFile.setWebRoot(System.getProperty("user.home"));
+
+			INSTANCE = new Configuration(configFile);
 		}
 	}
 
