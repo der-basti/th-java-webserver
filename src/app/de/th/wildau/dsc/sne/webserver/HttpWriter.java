@@ -283,6 +283,17 @@ public class HttpWriter {
 	}
 
 	/**
+	 * @see #createHtmlFile(String, String, String, String)
+	 * @param fileName
+	 * @param title
+	 * @param body
+	 * @return
+	 */
+	private File createHtmlFile(String fileName, String title, String body) {
+		return createHtmlFile(fileName, title, "", body);
+	}
+
+	/**
 	 * Internal help method which creates a temporary html file.
 	 * 
 	 * @param fileName
@@ -290,7 +301,8 @@ public class HttpWriter {
 	 * @param body
 	 * @return temp file
 	 */
-	private File createHtmlFile(String fileName, String title, String body) {
+	private File createHtmlFile(String fileName, String title, String style,
+			String body) {
 
 		try {
 			File tempFile = File.createTempFile(fileName, ".html");
@@ -299,7 +311,8 @@ public class HttpWriter {
 					new BufferedWriter(new FileWriter(tempFile)));
 			tempFilePrintWriter
 					.print("<html><head><meta charset=\"UTF-8\"><title>"
-							+ title + "</title></head><body>");
+							+ title + "</title><style>" + style
+							+ "</style></head><body>");
 			tempFilePrintWriter.print(body);
 			tempFilePrintWriter.print("</body></html>");
 			tempFilePrintWriter.flush();
@@ -318,12 +331,8 @@ public class HttpWriter {
 	 * @return File
 	 * @throws IOException
 	 */
-	// TODO [dsc] please use the createHtmlFile(...) method (^look^)
 	private File createDirectoryListing(File requestResource)
 			throws IOException {
-
-		File tempFile = File.createTempFile("directorylisting", ".html");
-		tempFile.deleteOnExit();
 
 		for (File file : requestResource.listFiles()) {
 			for (String item : Configuration.getConfig().getDirectoryIndex()) {
@@ -333,37 +342,34 @@ public class HttpWriter {
 			}
 		}
 
-		PrintWriter tempFilePrintWriter = new PrintWriter(new BufferedWriter(
-				new FileWriter(tempFile)));
-		String style = "<style>"
-				+ "ul li:nth-child(2n) {background-color:#E6E6E6;} "
+		String style = "ul li:nth-child(2n) {background-color:#E6E6E6;} "
 				+ "li {list-style:none;}" + "a:visited {color:#0000FF;}"
-				+ "body {margin:0; padding-top:15px;}" + "</style>";
+				+ "body {margin:0; padding-top:15px;}";
 
-		tempFilePrintWriter.print("<html><head>" + style + "</head><body><ul>");
+		String body = "<ul>";
 		// show directory info
-		tempFilePrintWriter.print("<h1>Directory: "
+		body = body
+				+ "<h1>Directory: "
 				+ requestResource.toString().replaceFirst(
-						Configuration.getConfig().getWebRoot(), "") + "</h1>");
+						Configuration.getConfig().getWebRoot(), "") + "</h1>";
+
 		// add parent link
 		if (!Configuration.getConfig().getWebRoot()
 				.startsWith(requestResource.getAbsolutePath())) {
-			tempFilePrintWriter.print("<li><a href=\"..\">/..</a></li>");
+			body = body + "<li><a href=\"..\">/..</a></li>";
 		}
 		// file listing
 		for (File file : requestResource.listFiles(new HiddenFilter())) {
 			if (file.isDirectory()) {
-				tempFilePrintWriter.print("<li><a href=\"" + file.getName()
-						+ "/\">" + file.getName() + "</a></li>");
+				body = body + "<li><a href=\"" + file.getName() + "/\">"
+						+ file.getName() + "</a></li>";
 			} else if (file.isFile()) {
-				tempFilePrintWriter.print("<li><a href=\"" + file.getName()
-						+ "\">" + file.getName() + "</a></li>");
+				body = body + "<li><a href=\"" + file.getName() + "\">"
+						+ file.getName() + "</a></li>";
 			}
 		}
-		tempFilePrintWriter.print("</ul></body></html>");
-		tempFilePrintWriter.flush();
-		tempFilePrintWriter.close();
-		return tempFile;
+		return createHtmlFile("directorylisting", requestResource.getName(),
+				style, body);
 	}
 
 	/**

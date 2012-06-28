@@ -71,7 +71,7 @@ public class HttpHandler implements Runnable {
 				if (Pattern.matches("^GET /*.* HTTP/1.[0,1]", line)) {
 					Log.info(line.split(" ")[1]);
 					requestResource = new File(Configuration.getConfig()
-							.getWebRoot() + line.split(" ")[1]);
+							.getWebRoot() + line.split(" ")[1].replaceAll("%20", " "));
 				} else if (Pattern.matches("^POST /*.*", line)) {
 					Log.warn("Doesn't support POST requests!");
 					return;

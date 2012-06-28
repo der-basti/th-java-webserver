@@ -1,4 +1,4 @@
- package de.th.wildau.dsc.sne.webserver;
+package de.th.wildau.dsc.sne.webserver;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,17 +71,21 @@ public class ScriptExecutor {
 	}
 
 	/**
-	 * This method tries to execute a file with the given {@link ScriptLanguage}.
+	 * This method tries to execute a file with the given {@link ScriptLanguage}
+	 * .
 	 * 
 	 * @param command
 	 *            to execute
 	 * @return command output
 	 */
 	public String execute(ScriptLanguage scriptLanguage, File file) {
-
-		// TODO [dsc] check file
-		return execute(scriptLanguage.getExecuteComand() + " "
-				+ file.toString());
+		String output = "";
+		if (file.isFile() && file.canRead()) {
+			output = execute(scriptLanguage.getExecuteComand() + " "
+					+ file.toString());
+		} else {
+			Log.error("ScriptExecutor can't read file " + file);		}
+		return output;
 	}
 
 	/**
