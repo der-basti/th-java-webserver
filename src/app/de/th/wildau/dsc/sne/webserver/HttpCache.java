@@ -76,7 +76,7 @@ public class HttpCache {
 			return;
 		}
 		
-		// Java 7, as part of NIO.2 has added the WatchService API
+		// Java 7, as part of NIO.2, has added the WatchService API
 
 		byte[] content = new byte[header.length + body.length];
 		int headerLength = header.length;

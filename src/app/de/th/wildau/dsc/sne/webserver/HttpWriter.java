@@ -257,11 +257,6 @@ public class HttpWriter {
 			}
 			break;
 		case 404:
-			// Thread.currentThread().getContextClassLoader().getResource("404.html").getFile();
-			// ClassLoader.getSystemResource("404.html").getFile();
-			// WebServer.class.getClassLoader().getResource("404.html").toURI();
-			// WebServer.class.getResourceAsStream("/404.html");
-			// WebServer.class.getClassLoader().getResourceAsStream("404.html");
 			if (Configuration.getConfig().getErrorPage404() != null) {
 				tempFile = new File(Configuration.getConfig().getErrorPage404());
 			} else {
@@ -397,7 +392,7 @@ public class HttpWriter {
 		} catch (final IOException ex) {
 			Log.warn(ex.getMessage());
 		}
-		// unknown content type - browser handle it
+		// unknown content type - browser handles it
 		return "application/octet-stream";
 	}
 
