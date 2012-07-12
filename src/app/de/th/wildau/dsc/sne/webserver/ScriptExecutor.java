@@ -9,7 +9,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The script executer is a class which interprets script files over the cmd/cli.
+ * The script executer is a class which interprets script files over the
+ * cmd/cli.
  */
 public class ScriptExecutor {
 
@@ -23,51 +24,102 @@ public class ScriptExecutor {
 		ScriptExecutor se = new ScriptExecutor();
 		List<ScriptLanguage> scriptLanguages = new ArrayList<ScriptLanguage>();
 
+		if (!isUnix()) {
+			Log.error("Script executer support currently only unix systems.");
+			return Collections.unmodifiableList(scriptLanguages);
+		}
+
 		// php
-		if (!se.execute("php -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PHP;
-			sl.setExecuteComand("php");
-			scriptLanguages.add(sl);
-		} else if (!se.execute("/usr/bin/php -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PHP;
-			sl.setExecuteComand("/usr/bin/php");
-			scriptLanguages.add(sl);
+		try {
+			if (!se.execute("php -version").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.PHP;
+				sl.setExecuteComand("php");
+				scriptLanguages.add(sl);
+			} else if (!se.execute("/usr/bin/php -version").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.PHP;
+				sl.setExecuteComand("/usr/bin/php");
+				scriptLanguages.add(sl);
+			}
+		} catch (final Exception ex) {
+			Log.warn("Can not find PHP.");
 		}
 
 		// perl
-		if (!se.execute("perl -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PERL;
-			sl.setExecuteComand("perl");
-			scriptLanguages.add(sl);
-		} else if (!se.execute("/usr/bin/perl -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PERL;
-			sl.setExecuteComand("/usr/bin/perl");
-			scriptLanguages.add(sl);
+		try {
+			if (!se.execute("perl -version").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.PERL;
+				sl.setExecuteComand("perl");
+				scriptLanguages.add(sl);
+			} else if (!se.execute("/usr/bin/perl -version").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.PERL;
+				sl.setExecuteComand("/usr/bin/perl");
+				scriptLanguages.add(sl);
+			}
+		} catch (final Exception ex) {
+			Log.warn("Can not find Perl.");
 		}
 
 		// python
-		if (!se.execute("python -h").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PYTHON;
-			sl.setExecuteComand("python");
-			scriptLanguages.add(sl);
-		} else if (!se.execute("/usr/bin/python -h").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.PYTHON;
-			sl.setExecuteComand("/usr/bin/python");
-			scriptLanguages.add(sl);
+		try {
+			if (!se.execute("python -h").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.PYTHON;
+				sl.setExecuteComand("python");
+				scriptLanguages.add(sl);
+			} else if (!se.execute("/usr/bin/python -h").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.PYTHON;
+				sl.setExecuteComand("/usr/bin/python");
+				scriptLanguages.add(sl);
+			}
+		} catch (final Exception ex) {
+			Log.warn("Can not find Python.");
 		}
 
 		// ruby
-		if (!se.execute("ruby -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.RUBY;
-			sl.setExecuteComand("ruby");
-			scriptLanguages.add(sl);
-		} else if (!se.execute("/usr/bin/ruby -version").trim().isEmpty()) {
-			ScriptLanguage sl = ScriptLanguage.RUBY;
-			sl.setExecuteComand("/usr/bin/ruby");
-			scriptLanguages.add(sl);
+		try {
+			if (!se.execute("ruby -version").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.RUBY;
+				sl.setExecuteComand("ruby");
+				scriptLanguages.add(sl);
+			} else if (!se.execute("/usr/bin/ruby -version").trim().isEmpty()) {
+				ScriptLanguage sl = ScriptLanguage.RUBY;
+				sl.setExecuteComand("/usr/bin/ruby");
+				scriptLanguages.add(sl);
+			}
+		} catch (final Exception ex) {
+			Log.warn("Can not find Ruby.");
 		}
 
 		return Collections.unmodifiableList(scriptLanguages);
+	}
+
+	private static boolean isWindows() {
+		return File.separatorChar == '\\';
+		// return isName("windows");
+	}
+
+	private static boolean isUnix() {
+		return File.separatorChar == '/';
+		// String osName = System.getProperty("os.name").toLowerCase();
+		// return (isName("unix") || isName("linux") || isName("mac"));
+	}
+
+	public static boolean isSun() {
+		return isName("sun");
+	}
+
+	private static boolean isName(String name) {
+		String osName = System.getProperty("os.name");
+
+		if (osName == null || osName.length() <= 0)
+			return false;
+
+		osName = osName.toLowerCase();
+		name = name.toLowerCase();
+
+		if (osName.indexOf(name) >= 0)
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -84,7 +136,8 @@ public class ScriptExecutor {
 			output = execute(scriptLanguage.getExecuteComand() + " "
 					+ file.toString());
 		} else {
-			Log.error("ScriptExecutor can't read file " + file);		}
+			Log.error("ScriptExecutor can't read file " + file);
+		}
 		return output;
 	}
 

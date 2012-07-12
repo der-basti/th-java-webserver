@@ -11,6 +11,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class HttpCache {
 
+	protected static final int CACHE_SIZE = 10;
+	protected static final long CACHE_TIME_MS = 60 * 1000; /* each 60 s */
+
+	private static long LAST_CACHE;
 	private static HttpCache INSTANCE;
 
 	private final int cacheSize;
@@ -33,11 +37,12 @@ public class HttpCache {
 	}
 
 	/**
-	 * Use default constructor. Caches 25 elements.
+	 * Caches max {@link #CACHE_SIZE} elements.
+	 * 
+	 * @return {@link HttpCache}
 	 */
-	private HttpCache() {
-
-		this(25);
+	public static synchronized final HttpCache getInstance() {
+		return getInstance(CACHE_SIZE);
 	}
 
 	/**
@@ -45,10 +50,10 @@ public class HttpCache {
 	 * 
 	 * @return {@link HttpCache}
 	 */
-	public static synchronized final HttpCache getInstance() {
+	public static synchronized final HttpCache getInstance(int cacheSize) {
 
 		if (INSTANCE == null) {
-			INSTANCE = new HttpCache();
+			INSTANCE = new HttpCache(cacheSize);
 		}
 		return INSTANCE;
 	}
@@ -75,7 +80,7 @@ public class HttpCache {
 			Log.debug("Don't cache files over 5 MB.");
 			return;
 		}
-		
+
 		// Java 7, as part of NIO.2, has added the WatchService API
 
 		byte[] content = new byte[header.length + body.length];
@@ -102,6 +107,7 @@ public class HttpCache {
 	private void put(File resource, byte[] content) {
 
 		if (INSTANCE.cache.size() >= INSTANCE.cacheSize) {
+			Log.debug("max cache size reached");
 			String remove = INSTANCE.queue.poll();
 			INSTANCE.cache.remove(remove);
 		}
@@ -110,6 +116,21 @@ public class HttpCache {
 	}
 
 	public boolean contains(File resource) {
+
+		System.out.println("last:" + LAST_CACHE + " current:"
+				+ System.currentTimeMillis());
+		System.out.println("div:" + (System.currentTimeMillis() - LAST_CACHE));
+		System.out.println(CACHE_TIME_MS);
+
+		if (LAST_CACHE <= 0) {
+			LAST_CACHE = System.currentTimeMillis();
+		}
+		if (CACHE_TIME_MS < (System.currentTimeMillis() - LAST_CACHE)) {
+			Log.debug("reset http cache");
+			LAST_CACHE = System.currentTimeMillis();
+			INSTANCE.cache.clear();
+			return false;
+		}
 		return INSTANCE.cache.containsKey(resource.toString());
 	}
 }
