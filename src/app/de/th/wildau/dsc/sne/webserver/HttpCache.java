@@ -117,11 +117,6 @@ public class HttpCache {
 
 	public boolean contains(File resource) {
 
-		System.out.println("last:" + LAST_CACHE + " current:"
-				+ System.currentTimeMillis());
-		System.out.println("div:" + (System.currentTimeMillis() - LAST_CACHE));
-		System.out.println(CACHE_TIME_MS);
-
 		if (LAST_CACHE <= 0) {
 			LAST_CACHE = System.currentTimeMillis();
 		}
